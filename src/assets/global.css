@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* purgecss start ignore */
+html, body {
+  @apply h-full min-h-screen;
+}
+
+html {
+  font-size: 16px; /* Force the definition of 16px as 1rem */
+}
+
+#root {
+  @apply flex h-full w-full overflow-hidden
+}
+
+body {
+  @apply antialiased;
+}
+
+/* purgecss end ignore */
