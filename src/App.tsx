@@ -46,12 +46,26 @@ function App() {
   const [zoneForecast, setZoneForecast] = useState<forecast.ZoneForecast | undefined>()
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  const client = new Client(Environment("staging"));
+  // const client = window.location.host.includes("vercel.app")
+  //   ? new Client(Environment("staging"))
+  //   : new Client(Local);
+
   useEffect(() => {
     const func = async () => {
-      const client = new Client(Environment("staging"));
-      // const client = window.location.host.includes("vercel.app")
-      //   ? new Client(Environment("staging"))
-      //   : new Client(Local);
+      await fetch('https://api.db-ip.com/v2/free/self')
+        .then(async (response) => {
+          const {ipAddress} = await response.json()
+          const data = await client.forecast.GetPostalCodeFromIP({ip: ipAddress});
+          setPostalCode(data.zip_code);
+        })
+        .then((data) => console.log(data));
+    };
+    func();
+  }, [])
+
+  useEffect(() => {
+    const func = async () => {
       const data = await client.forecast.GetForecasts();
       data.zones.forEach(z => (z as any).data = z.data.map(({year, price}) => ({
         year,
@@ -71,10 +85,6 @@ function App() {
 
   const search = async () => {
     setIsLoading(true);
-    const client = new Client(Environment("staging"));
-    // const client = window.location.host.includes("vercel.app")
-    //   ? new Client(Environment("staging"))
-    //   : new Client(Local);
     const data = await client.forecast.GetZoneFromPostalCode(postalCode);
     // console.log(data);
     setSelectedZone(data.zone as any);
@@ -103,7 +113,7 @@ function App() {
             <div className="relative mt-10 sm:mt-20 lg:col-span-5 lg:row-span-2 lg:mt-0 xl:col-span-6">
               <BackgroundIllustration/>
               <div
-                className="-mx-4 h-[400px] px-9 [mask-image:linear-gradient(to_bottom,white_60%,transparent)] sm:mx-0 lg:absolute lg:-inset-x-10 lg:-top-10 lg:-bottom-20 lg:h-auto lg:px-0 lg:pt-32 xl:-bottom-32">
+                className="h-[120px] px-9 [mask-image:linear-gradient(to_bottom,white_60%,transparent)] sm:mx-0 lg:absolute lg:-inset-x-10 lg:top-0 lg:-bottom-20 lg:h-auto lg:px-0 lg:pt-24">
                 <div className="mx-auto max-w-[400px] flex flex-row">
                   <TextField
                     className="mr-10"
@@ -128,19 +138,6 @@ function App() {
         className="bg-gray-900 py-16 sm:py-32"
       >
         <Container>
-          {/*<div className="mx-auto max-w-2xl lg:mx-0 lg:max-w-3xl">*/}
-          {/*  <h2 className="text-3xl font-medium tracking-tight text-white">*/}
-          {/*    Every feature you need to win. Try it for yourself.*/}
-          {/*  </h2>*/}
-          {/*  <p className="mt-2 text-lg text-gray-400">*/}
-          {/*    Pocket was built for investors like you who play by their own rules*/}
-          {/*    and aren’t going to let SEC regulations get in the way of their*/}
-          {/*    dreams. If other investing tools are afraid to build it, Pocket has*/}
-          {/*    it.*/}
-          {/*  </p>*/}
-          {/*</div>*/}
-
-
           <div className="flex flex-col items-center justify-center">
             <div className="flex mb-5 space-x-8">
               <Button variant="solid" color={selectedZone === "1" ? "cyan" : "white"}
@@ -163,9 +160,9 @@ function App() {
             {/*<ResponsiveContainer width="100%" height="100%">*/}
             <LineChart width={1000} height={350} data={zoneForecast?.data}>
               <Line type="monotone" dataKey="price" stroke="#8884d8"/>
-              <CartesianGrid stroke="#ccc" strokeDasharray="5 5"/>
-              <XAxis dataKey="year" scale="auto"/>
-              <YAxis domain={[0, 300]}/>
+              <CartesianGrid stroke="#E8E8E8" strokeDasharray="5 5"/>
+              <XAxis dataKey="year" stroke="#eee" scale="auto"/>
+              <YAxis domain={[0, 300]} stroke="#eee"/>
               <Tooltip/>
             </LineChart>
             {/*</ResponsiveContainer>*/}

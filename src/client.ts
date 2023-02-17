@@ -61,6 +61,10 @@ export namespace forecast {
         price: string
     }
 
+    export interface IPLocationInfo {
+        "zip_code": string
+    }
+
     export interface ListResponse {
         zones: ZoneForecast[]
     }
@@ -69,6 +73,10 @@ export namespace forecast {
         status: number
         msg: string
         zone: string
+    }
+
+    export interface Request {
+        ip: string
     }
 
     export interface ZoneForecast {
@@ -88,6 +96,12 @@ export namespace forecast {
             // Now make the actual call to the API
             const resp = await this.baseClient.callAPI("POST", `/forecasts`)
             return await resp.json() as ListResponse
+        }
+
+        public async GetPostalCodeFromIP(params: Request): Promise<IPLocationInfo> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callAPI("POST", `/ip`, JSON.stringify(params))
+            return await resp.json() as IPLocationInfo
         }
 
         public async GetZoneFromPostalCode(postalCode: string): Promise<PostalCodeInfo> {
