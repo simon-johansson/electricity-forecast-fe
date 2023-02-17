@@ -1,8 +1,10 @@
-import { ChangeEvent, FC, useMemo, useState } from "react";
-import { AxisOptions } from "react-charts";
-import { CartesianGrid, Line, LineChart, Tooltip, XAxis, YAxis } from "recharts";
+import React, {ChangeEvent, FC, PropsWithChildren, useEffect, useId, useState} from "react";
+import Client, {Environment, forecast} from "./client";
+import clsx from "clsx";
+import {Button} from "./components/Button";
+import {CartesianGrid, Line, LineChart, Tooltip, XAxis, YAxis} from "recharts";
 
-const data2 = [{ name: "Page A", uv: 400, pv: 2400, amt: 2400 }];
+const data2 = [{name: "Page A", uv: 400, pv: 2400, amt: 2400}];
 
 type DailyStars = {
   date: Date;
@@ -39,73 +41,244 @@ const data: Series[] = [
 
 function App() {
   const [postalCode, setPostalCode] = useState<string>("");
+  const [forecasts, setForecasts] = useState<forecast.ListResponse | undefined>();
+  const [selectedZone, setSelectedZone] = useState<"1" | "2" | "3" | "4">("1");
+  const [zoneForecast, setZoneForecast] = useState<forecast.ZoneForecast | undefined>()
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const primaryAxis = useMemo(
-    (): AxisOptions<DailyStars> => ({
-      getValue: (datum) => datum.date,
-    }),
-    []
-  );
+  useEffect(() => {
+    const func = async () => {
+      const client = new Client(Environment("staging"));
+      // const client = window.location.host.includes("vercel.app")
+      //   ? new Client(Environment("staging"))
+      //   : new Client(Local);
+      const data = await client.forecast.GetForecasts();
+      data.zones.forEach(z => (z as any).data = z.data.map(({year, price}) => ({
+        year,
+        price: parseFloat(price.replace(",", "."))
+      })))
+      // console.log(data);
+      setForecasts(data);
+    };
+    func();
+  }, []);
 
-  const secondaryAxes = useMemo(
-    (): AxisOptions<DailyStars>[] => [
-      {
-        getValue: (datum) => datum.stars,
-      },
-    ],
-    []
-  );
+  useEffect(() => {
+    if (forecasts && selectedZone) {
+      setZoneForecast(forecasts.zones.find(z => z.zone === selectedZone))
+    }
+  }, [forecasts, selectedZone]);
 
-  const search = () => {
-    console.log(postalCode);
-    // const client = new Client(Environment("staging"));
-    // // const client = window.location.host.includes("vercel.app")
-    // //   ? new Client(Environment("staging"))
-    // //   : new Client(Local);
-    // const data = await client.sound.GetRandomSound();
-    // setRandomSound({
-    //   name: data.label,
-    //   url: data.url,
-    //   folder: "sound-of-today",
-    // });
+  const search = async () => {
+    setIsLoading(true);
+    const client = new Client(Environment("staging"));
+    // const client = window.location.host.includes("vercel.app")
+    //   ? new Client(Environment("staging"))
+    //   : new Client(Local);
+    const data = await client.forecast.GetZoneFromPostalCode(postalCode);
+    // console.log(data);
+    setSelectedZone(data.zone as any);
+    setIsLoading(false);
   };
 
-  return (
-    <div className="w-full max-w-5xl h-full flex flex-col p-5">
-      <h1>Elpris Prognos</h1>
-      <input
-        type="text"
-        value={postalCode}
-        onChange={(event: ChangeEvent<HTMLInputElement>) => setPostalCode(event.target.value)}
-      />
-      <button onClick={search}>Sök</button>
+  // console.log(forecasts);
 
-      <div>
-        <LineChart width={400} height={400} data={data2}>
-          <Line type="monotone" dataKey="uv" stroke="#8884d8" />
-          <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
-          <XAxis dataKey="name" />
-          <YAxis />
-          <Tooltip />
-        </LineChart>
+  return (
+    <div className="flex flex-col">
+      {/*<Map />*/}
+
+      <div className="py-16 overflow-hidden">
+        <Container>
+          <div className="lg:grid lg:grid-cols-12 lg:gap-x-8 lg:gap-y-20">
+            <div className="relative z-10 mx-auto max-w-2xl lg:col-span-7 lg:max-w-none lg:pt-6 xl:col-span-6">
+              <h1 className="text-4xl font-medium tracking-tight text-gray-900">
+                Prognos för ditt elpris.
+              </h1>
+              <p className="mt-6 text-lg text-gray-600">
+                Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aut, autem, debitis
+                delectus distinctio dolore, doloremque ducimus error ex ipsum molestias nesciunt
+                nulla.
+              </p>
+            </div>
+            <div className="relative mt-10 sm:mt-20 lg:col-span-5 lg:row-span-2 lg:mt-0 xl:col-span-6">
+              <BackgroundIllustration/>
+              <div
+                className="-mx-4 h-[400px] px-9 [mask-image:linear-gradient(to_bottom,white_60%,transparent)] sm:mx-0 lg:absolute lg:-inset-x-10 lg:-top-10 lg:-bottom-20 lg:h-auto lg:px-0 lg:pt-32 xl:-bottom-32">
+                <div className="mx-auto max-w-[400px] flex flex-row">
+                  <TextField
+                    className="mr-10"
+                    label="Ditt postnummer"
+                    id="postal-code"
+                    value={postalCode}
+                    onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                      setPostalCode(event.target.value)
+                    }
+                  />
+                  <Button variant="solid" color="cyan" onClick={search} className="mt-8 w-28">
+                    {isLoading ? "Laddar..." : "Sök"}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Container>
       </div>
 
-      {/*<div className="relative w-full h-36">*/}
-      {/*  <Chart*/}
-      {/*    options={{*/}
-      {/*      data,*/}
-      {/*      primaryAxis,*/}
-      {/*      secondaryAxes,*/}
-      {/*    }}*/}
-      {/*  />*/}
-      {/*</div>*/}
+      <section
+        className="bg-gray-900 py-16 sm:py-32"
+      >
+        <Container>
+          {/*<div className="mx-auto max-w-2xl lg:mx-0 lg:max-w-3xl">*/}
+          {/*  <h2 className="text-3xl font-medium tracking-tight text-white">*/}
+          {/*    Every feature you need to win. Try it for yourself.*/}
+          {/*  </h2>*/}
+          {/*  <p className="mt-2 text-lg text-gray-400">*/}
+          {/*    Pocket was built for investors like you who play by their own rules*/}
+          {/*    and aren’t going to let SEC regulations get in the way of their*/}
+          {/*    dreams. If other investing tools are afraid to build it, Pocket has*/}
+          {/*    it.*/}
+          {/*  </p>*/}
+          {/*</div>*/}
 
-      {/*<Map />*/}
+
+          <div className="flex flex-col items-center justify-center">
+            <div className="flex mb-5 space-x-8">
+              <Button variant="solid" color={selectedZone === "1" ? "cyan" : "white"}
+                      onClick={() => setSelectedZone("1")} className="w-20">
+                SE01
+              </Button>
+              <Button variant="solid" color={selectedZone === "2" ? "cyan" : "white"}
+                      onClick={() => setSelectedZone("2")} className="w-20">
+                SE02
+              </Button>
+              <Button variant="solid" color={selectedZone === "3" ? "cyan" : "white"}
+                      onClick={() => setSelectedZone("3")} className="w-20">
+                SE03
+              </Button>
+              <Button variant="solid" color={selectedZone === "4" ? "cyan" : "white"}
+                      onClick={() => setSelectedZone("4")} className="w-20">
+                SE04
+              </Button>
+            </div>
+            {/*<ResponsiveContainer width="100%" height="100%">*/}
+            <LineChart width={1000} height={350} data={zoneForecast?.data}>
+              <Line type="monotone" dataKey="price" stroke="#8884d8"/>
+              <CartesianGrid stroke="#ccc" strokeDasharray="5 5"/>
+              <XAxis dataKey="year" scale="auto"/>
+              <YAxis domain={[0, 300]}/>
+              <Tooltip/>
+            </LineChart>
+            {/*</ResponsiveContainer>*/}
+          </div>
+        </Container>
+      </section>
     </div>
   );
 }
 
 export default App;
+
+const Container: FC<PropsWithChildren & { className?: string }> = ({className, ...props}) => {
+  return <div className={clsx("mx-auto max-w-7xl px-4 sm:px-6 lg:px-8", className)} {...props} />;
+};
+
+const formClasses =
+  "block w-full appearance-none rounded-lg border border-gray-200 bg-white py-[calc(theme(spacing.2)-1px)] px-[calc(theme(spacing.3)-1px)] text-gray-900 placeholder:text-gray-400 focus:border-cyan-500 focus:outline-none focus:ring-cyan-500 sm:text-sm";
+
+const Label: FC<PropsWithChildren & { id: string }> = ({id, children}) => {
+  return (
+    <label htmlFor={id} className="mb-2 block text-sm font-semibold text-gray-900">
+      {children}
+    </label>
+  );
+};
+
+const TextField: FC<
+  PropsWithChildren & {
+  id: string;
+  label?: string;
+  className?: string;
+  value?: string;
+  onChange: (e: any) => void;
+}
+> = ({id, label, className, ...props}) => {
+  return (
+    <div className={className}>
+      {label && <Label id={id}>{label}</Label>}
+      <input id={id} type="text" {...props} className={formClasses}/>
+    </div>
+  );
+};
+
+const BackgroundIllustration = () => {
+  let id = useId();
+
+  return (
+    <div
+      className="absolute left-1/2 top-4 h-[1026px] w-[1026px] -translate-x-1/3 stroke-gray-300/70 [mask-image:linear-gradient(to_bottom,white_20%,transparent_75%)] sm:top-16 sm:-translate-x-1/2 lg:-top-16 lg:ml-12 xl:-top-14 xl:ml-0">
+      <svg
+        viewBox="0 0 1026 1026"
+        fill="none"
+        aria-hidden="true"
+        className="absolute inset-0 h-full w-full animate-spin-slow"
+      >
+        <path
+          d="M1025 513c0 282.77-229.23 512-512 512S1 795.77 1 513 230.23 1 513 1s512 229.23 512 512Z"
+          stroke="#D4D4D4"
+          strokeOpacity="0.7"
+        />
+        <path
+          d="M513 1025C230.23 1025 1 795.77 1 513"
+          stroke={`url(#${id}-gradient-1)`}
+          strokeLinecap="round"
+        />
+        <defs>
+          <linearGradient
+            id={`${id}-gradient-1`}
+            x1="1"
+            y1="513"
+            x2="1"
+            y2="1025"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop stopColor="#06b6d4"/>
+            <stop offset="1" stopColor="#06b6d4" stopOpacity="0"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <svg
+        viewBox="0 0 1026 1026"
+        fill="none"
+        aria-hidden="true"
+        className="absolute inset-0 h-full w-full animate-spin-reverse-slower"
+      >
+        <path
+          d="M913 513c0 220.914-179.086 400-400 400S113 733.914 113 513s179.086-400 400-400 400 179.086 400 400Z"
+          stroke="#D4D4D4"
+          strokeOpacity="0.7"
+        />
+        <path
+          d="M913 513c0 220.914-179.086 400-400 400"
+          stroke={`url(#${id}-gradient-2)`}
+          strokeLinecap="round"
+        />
+        <defs>
+          <linearGradient
+            id={`${id}-gradient-2`}
+            x1="913"
+            y1="513"
+            x2="913"
+            y2="913"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop stopColor="#06b6d4"/>
+            <stop offset="1" stopColor="#06b6d4" stopOpacity="0"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+  );
+};
 
 const Map: FC = () => (
   <svg width={42} height={104} fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -129,7 +302,7 @@ const Map: FC = () => (
     </g>
     <defs>
       <clipPath id="a">
-        <path fill="#fff" d="M0 0h41.91v103.128H0z" />
+        <path fill="#fff" d="M0 0h41.91v103.128H0z"/>
       </clipPath>
     </defs>
   </svg>

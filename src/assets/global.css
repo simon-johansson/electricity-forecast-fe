@@ -2,17 +2,35 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Inter';
+  font-weight: 100 900;
+  font-display: block;
+  font-style: normal;
+  font-named-instance: 'Regular';
+  src: url('/assets/fonts/Inter-roman.var.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-weight: 100 900;
+  font-display: block;
+  font-style: italic;
+  font-named-instance: 'Italic';
+  src: url('/assets/fonts/Inter-italic.var.woff2') format('woff2');
+}
+
 /* purgecss start ignore */
 html, body {
-  @apply h-full min-h-screen;
+  @apply h-full;
 }
 
 html {
+  @apply bg-gray-50 antialiased;
   font-size: 16px; /* Force the definition of 16px as 1rem */
 }
 
 #root {
-  @apply flex h-full w-full overflow-hidden
+  @apply w-full overflow-hidden
 }
 
 body {
