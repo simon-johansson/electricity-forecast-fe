@@ -25,7 +25,7 @@ html, body {
 }
 
 html {
-  @apply bg-gray-50 antialiased;
+  @apply antialiased;
   font-size: 16px; /* Force the definition of 16px as 1rem */
 }
 

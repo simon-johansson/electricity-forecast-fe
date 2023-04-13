@@ -11,18 +11,26 @@
   },
   "dependencies": {
     "@headlessui/react": "^1.7.11",
+    "@heroicons/react": "^2.0.16",
+    "@reduxjs/toolkit": "^1.9.3",
     "clsx": "^1.2.1",
+    "date-fns": "^2.29.3",
     "postcss-focus-visible": "^8.0.2",
     "react": "^18.2.0",
     "react-charts": "^3.0.0-beta.54",
+    "react-circle-flags": "^0.0.18",
     "react-dom": "^18.2.0",
-    "recharts": "^2.4.1"
+    "react-redux": "^8.0.5",
+    "react-sticky": "^6.0.3",
+    "recharts": "^2.4.1",
+    "victory": "^36.6.8"
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.3",
     "@tailwindcss/typography": "^0.5.9",
     "@types/react": "^18.0.27",
     "@types/react-dom": "^18.0.10",
+    "@types/react-sticky": "^6.0.4",
     "@vitejs/plugin-react": "^3.1.0",
     "autoprefixer": "^10.4.13",
     "postcss": "^8.4.21",
