@@ -4,9 +4,9 @@ import Layout from "./components/Layout";
 
 function App() {
   const [postalCode, setPostalCode] = useState<string>("");
-  const [forecasts, setForecasts] = useState<forecast.ListResponse | undefined>();
+  // const [forecasts, setForecasts] = useState<forecast.ListResponse | undefined>();
   const [selectedZone, setSelectedZone] = useState<"1" | "2" | "3" | "4">("1");
-  const [zoneForecast, setZoneForecast] = useState<forecast.ZoneForecast | undefined>();
+  // const [zoneForecast, setZoneForecast] = useState<forecast.ZoneForecast | undefined>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // const value = useAppSelector((state) => state.counter.value);
@@ -45,11 +45,11 @@ function App() {
     func();
   }, []);
 
-  useEffect(() => {
-    if (forecasts && selectedZone) {
-      setZoneForecast(forecasts.zones.find((z) => z.zone === selectedZone));
-    }
-  }, [forecasts, selectedZone]);
+  // useEffect(() => {
+  //   if (forecasts && selectedZone) {
+  //     setZoneForecast(forecasts.zones.find((z) => z.zone === selectedZone));
+  //   }
+  // }, [forecasts, selectedZone]);
 
   const search = async () => {
     setIsLoading(true);

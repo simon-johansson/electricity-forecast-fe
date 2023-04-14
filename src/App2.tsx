@@ -1,15 +1,14 @@
-import React, {ChangeEvent, FC, PropsWithChildren, useEffect, useId, useState} from "react";
-import Client, {Environment, forecast} from "./client";
+import React, { ChangeEvent, FC, PropsWithChildren, useEffect, useId, useState } from "react";
+import Client, { Environment, forecast } from "./client";
 import clsx from "clsx";
-import {Button} from "./components/Button";
-import {CartesianGrid, Line, LineChart, Tooltip, XAxis, YAxis} from "recharts";
-
+import { Button } from "./components/Button";
+import { CartesianGrid, Line, LineChart, Tooltip, XAxis, YAxis } from "recharts";
 
 function App2() {
   const [postalCode, setPostalCode] = useState<string>("");
-  const [forecasts, setForecasts] = useState<forecast.ListResponse | undefined>();
+  // const [forecasts, setForecasts] = useState<forecast.ListResponse | undefined>();
   const [selectedZone, setSelectedZone] = useState<"1" | "2" | "3" | "4">("1");
-  const [zoneForecast, setZoneForecast] = useState<forecast.ZoneForecast | undefined>()
+  // const [zoneForecast, setZoneForecast] = useState<forecast.ZoneForecast | undefined>()
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const client = new Client(Environment("staging"));
@@ -19,35 +18,35 @@ function App2() {
 
   useEffect(() => {
     const func = async () => {
-      await fetch('https://api.db-ip.com/v2/free/self')
+      await fetch("https://api.db-ip.com/v2/free/self")
         .then(async (response) => {
-          const {ipAddress} = await response.json()
-          const data = await client.forecast.GetPostalCodeFromIP({ip: ipAddress});
+          const { ipAddress } = await response.json();
+          const data = await client.forecast.GetPostalCodeFromIP({ ip: ipAddress });
           setPostalCode(data.zip_code);
         })
         .then((data) => console.log(data));
     };
     func();
-  }, [])
-
-  useEffect(() => {
-    const func = async () => {
-      const data = await client.forecast.GetForecasts();
-      data.zones.forEach(z => (z as any).data = z.data.map(({year, price}) => ({
-        year,
-        price: parseFloat(price.replace(",", "."))
-      })))
-      // console.log(data);
-      setForecasts(data);
-    };
-    func();
   }, []);
 
-  useEffect(() => {
-    if (forecasts && selectedZone) {
-      setZoneForecast(forecasts.zones.find(z => z.zone === selectedZone))
-    }
-  }, [forecasts, selectedZone]);
+  // useEffect(() => {
+  //   const func = async () => {
+  //     const data = await client.forecast.GetForecasts();
+  //     data.zones.forEach(z => (z as any).data = z.data.map(({year, price}) => ({
+  //       year,
+  //       price: parseFloat(price.replace(",", "."))
+  //     })))
+  //     // console.log(data);
+  //     setForecasts(data);
+  //   };
+  //   func();
+  // }, []);
+  //
+  // useEffect(() => {
+  //   if (forecasts && selectedZone) {
+  //     setZoneForecast(forecasts.zones.find(z => z.zone === selectedZone))
+  //   }
+  // }, [forecasts, selectedZone]);
 
   const search = async () => {
     setIsLoading(true);
@@ -63,7 +62,7 @@ function App2() {
     <div className="flex flex-col">
       {/*<Map />*/}
 
-      <div className="py-16 overflow-hidden">
+      <div className="overflow-hidden py-16">
         <Container>
           <div className="lg:grid lg:grid-cols-12 lg:gap-x-8 lg:gap-y-20">
             <div className="relative z-10 mx-auto max-w-2xl lg:col-span-7 lg:max-w-none lg:pt-6 xl:col-span-6">
@@ -77,10 +76,9 @@ function App2() {
               </p>
             </div>
             <div className="relative mt-10 sm:mt-20 lg:col-span-5 lg:row-span-2 lg:mt-0 xl:col-span-6">
-              <BackgroundIllustration/>
-              <div
-                className="h-[120px] px-9 [mask-image:linear-gradient(to_bottom,white_60%,transparent)] sm:mx-0 lg:absolute lg:-inset-x-10 lg:top-0 lg:-bottom-20 lg:h-auto lg:px-0 lg:pt-24">
-                <div className="mx-auto max-w-[400px] flex flex-row">
+              <BackgroundIllustration />
+              <div className="h-[120px] px-9 [mask-image:linear-gradient(to_bottom,white_60%,transparent)] sm:mx-0 lg:absolute lg:-inset-x-10 lg:top-0 lg:-bottom-20 lg:h-auto lg:px-0 lg:pt-24">
+                <div className="mx-auto flex max-w-[400px] flex-row">
                   <TextField
                     className="mr-10"
                     label="Ditt postnummer"
@@ -100,37 +98,51 @@ function App2() {
         </Container>
       </div>
 
-      <section
-        className="bg-gray-900 py-16 sm:py-32"
-      >
+      <section className="bg-gray-900 py-16 sm:py-32">
         <Container>
           <div className="flex flex-col items-center justify-center">
-            <div className="flex mb-5 space-x-8">
-              <Button variant="solid" color={selectedZone === "1" ? "cyan" : "white"}
-                      onClick={() => setSelectedZone("1")} className="w-20">
+            <div className="mb-5 flex space-x-8">
+              <Button
+                variant="solid"
+                color={selectedZone === "1" ? "cyan" : "white"}
+                onClick={() => setSelectedZone("1")}
+                className="w-20"
+              >
                 SE01
               </Button>
-              <Button variant="solid" color={selectedZone === "2" ? "cyan" : "white"}
-                      onClick={() => setSelectedZone("2")} className="w-20">
+              <Button
+                variant="solid"
+                color={selectedZone === "2" ? "cyan" : "white"}
+                onClick={() => setSelectedZone("2")}
+                className="w-20"
+              >
                 SE02
               </Button>
-              <Button variant="solid" color={selectedZone === "3" ? "cyan" : "white"}
-                      onClick={() => setSelectedZone("3")} className="w-20">
+              <Button
+                variant="solid"
+                color={selectedZone === "3" ? "cyan" : "white"}
+                onClick={() => setSelectedZone("3")}
+                className="w-20"
+              >
                 SE03
               </Button>
-              <Button variant="solid" color={selectedZone === "4" ? "cyan" : "white"}
-                      onClick={() => setSelectedZone("4")} className="w-20">
+              <Button
+                variant="solid"
+                color={selectedZone === "4" ? "cyan" : "white"}
+                onClick={() => setSelectedZone("4")}
+                className="w-20"
+              >
                 SE04
               </Button>
             </div>
             {/*<ResponsiveContainer width="100%" height="100%">*/}
-            <LineChart width={1000} height={350} data={zoneForecast?.data}>
-              <Line type="monotone" dataKey="price" stroke="#8884d8"/>
-              <CartesianGrid stroke="#E8E8E8" strokeDasharray="5 5"/>
-              <XAxis dataKey="year" stroke="#eee" scale="auto"/>
-              <YAxis domain={[0, 300]} stroke="#eee"/>
-              <Tooltip/>
-            </LineChart>
+            {/*<LineChart width={1000} height={350} data={zoneForecast?.data}>*/}
+            {/*  <Line type="monotone" dataKey="price" stroke="#8884d8"/>*/}
+            {/*  <CartesianGrid stroke="#E8E8E8" strokeDasharray="5 5"/>*/}
+            {/*  <XAxis dataKey="year" stroke="#eee" scale="auto"/>*/}
+            {/*  <YAxis domain={[0, 300]} stroke="#eee"/>*/}
+            {/*  <Tooltip/>*/}
+            {/*</LineChart>*/}
             {/*</ResponsiveContainer>*/}
           </div>
         </Container>
@@ -141,14 +153,14 @@ function App2() {
 
 export default App2;
 
-const Container: FC<PropsWithChildren & { className?: string }> = ({className, ...props}) => {
+const Container: FC<PropsWithChildren & { className?: string }> = ({ className, ...props }) => {
   return <div className={clsx("mx-auto max-w-7xl px-4 sm:px-6 lg:px-8", className)} {...props} />;
 };
 
 const formClasses =
   "block w-full appearance-none rounded-lg border border-gray-200 bg-white py-[calc(theme(spacing.2)-1px)] px-[calc(theme(spacing.3)-1px)] text-gray-900 placeholder:text-gray-400 focus:border-cyan-500 focus:outline-none focus:ring-cyan-500 sm:text-sm";
 
-const Label: FC<PropsWithChildren & { id: string }> = ({id, children}) => {
+const Label: FC<PropsWithChildren & { id: string }> = ({ id, children }) => {
   return (
     <label htmlFor={id} className="mb-2 block text-sm font-semibold text-gray-900">
       {children}
@@ -158,17 +170,17 @@ const Label: FC<PropsWithChildren & { id: string }> = ({id, children}) => {
 
 const TextField: FC<
   PropsWithChildren & {
-  id: string;
-  label?: string;
-  className?: string;
-  value?: string;
-  onChange: (e: any) => void;
-}
-> = ({id, label, className, ...props}) => {
+    id: string;
+    label?: string;
+    className?: string;
+    value?: string;
+    onChange: (e: any) => void;
+  }
+> = ({ id, label, className, ...props }) => {
   return (
     <div className={className}>
       {label && <Label id={id}>{label}</Label>}
-      <input id={id} type="text" {...props} className={formClasses}/>
+      <input id={id} type="text" {...props} className={formClasses} />
     </div>
   );
 };
@@ -177,13 +189,12 @@ const BackgroundIllustration = () => {
   let id = useId();
 
   return (
-    <div
-      className="absolute left-1/2 top-4 h-[1026px] w-[1026px] -translate-x-1/3 stroke-gray-300/70 [mask-image:linear-gradient(to_bottom,white_20%,transparent_75%)] sm:top-16 sm:-translate-x-1/2 lg:-top-16 lg:ml-12 xl:-top-14 xl:ml-0">
+    <div className="absolute left-1/2 top-4 h-[1026px] w-[1026px] -translate-x-1/3 stroke-gray-300/70 [mask-image:linear-gradient(to_bottom,white_20%,transparent_75%)] sm:top-16 sm:-translate-x-1/2 lg:-top-16 lg:ml-12 xl:-top-14 xl:ml-0">
       <svg
         viewBox="0 0 1026 1026"
         fill="none"
         aria-hidden="true"
-        className="absolute inset-0 h-full w-full animate-spin-slow"
+        className="animate-spin-slow absolute inset-0 h-full w-full"
       >
         <path
           d="M1025 513c0 282.77-229.23 512-512 512S1 795.77 1 513 230.23 1 513 1s512 229.23 512 512Z"
@@ -204,8 +215,8 @@ const BackgroundIllustration = () => {
             y2="1025"
             gradientUnits="userSpaceOnUse"
           >
-            <stop stopColor="#06b6d4"/>
-            <stop offset="1" stopColor="#06b6d4" stopOpacity="0"/>
+            <stop stopColor="#06b6d4" />
+            <stop offset="1" stopColor="#06b6d4" stopOpacity="0" />
           </linearGradient>
         </defs>
       </svg>
@@ -213,7 +224,7 @@ const BackgroundIllustration = () => {
         viewBox="0 0 1026 1026"
         fill="none"
         aria-hidden="true"
-        className="absolute inset-0 h-full w-full animate-spin-reverse-slower"
+        className="animate-spin-reverse-slower absolute inset-0 h-full w-full"
       >
         <path
           d="M913 513c0 220.914-179.086 400-400 400S113 733.914 113 513s179.086-400 400-400 400 179.086 400 400Z"
@@ -234,8 +245,8 @@ const BackgroundIllustration = () => {
             y2="913"
             gradientUnits="userSpaceOnUse"
           >
-            <stop stopColor="#06b6d4"/>
-            <stop offset="1" stopColor="#06b6d4" stopOpacity="0"/>
+            <stop stopColor="#06b6d4" />
+            <stop offset="1" stopColor="#06b6d4" stopOpacity="0" />
           </linearGradient>
         </defs>
       </svg>
@@ -265,7 +276,7 @@ const Map: FC = () => (
     </g>
     <defs>
       <clipPath id="a">
-        <path fill="#fff" d="M0 0h41.91v103.128H0z"/>
+        <path fill="#fff" d="M0 0h41.91v103.128H0z" />
       </clipPath>
     </defs>
   </svg>
