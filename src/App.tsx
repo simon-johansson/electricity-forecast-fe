@@ -38,16 +38,9 @@ function App() {
 
   useEffect(() => {
     const func = async () => {
-      const data = await client.forecast.GetForecasts();
-      data.zones.forEach(
-        (z) =>
-          ((z as any).data = z.data.map(({ year, price }) => ({
-            year,
-            price: parseFloat(price.replace(",", ".")),
-          })))
-      );
-      // console.log(data);
-      setForecasts(data);
+      const data = await client.csv.GetCountryList();
+      console.log(data);
+      // setForecasts(data);
     };
     func();
   }, []);
