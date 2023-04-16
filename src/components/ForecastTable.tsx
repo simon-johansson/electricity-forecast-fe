@@ -304,7 +304,7 @@ const TimeRow: FC<{
         <span className="inline-block min-w-[45px]">{Math.floor(props.price)}</span>
         {props.priceHigh && props.priceLow && (
           <span className="text-tiny font-light text-gray-500">
-            {Math.floor(props.priceHigh)}-{Math.floor(props.priceLow)}
+            {Math.floor(props.priceLow)}-{Math.floor(props.priceHigh)}
           </span>
         )}
         {/*<span className="text-tiny font-light text-gray-500"> snitt</span>*/}

@@ -23,7 +23,10 @@ const Layout: FC<PropsWithChildren> = (props) => {
           <Disclosure as="nav" className="border-b border-gray-200 bg-white">
             {({ open }) => (
               <>
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div
+                  className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"
+                  onClick={() => dispatch(setIsSearchingLocation(true))}
+                >
                   <div className="flex h-16 justify-between">
                     <div className="flex">
                       <div className="flex flex-shrink-0 items-center">
@@ -50,10 +53,7 @@ const Layout: FC<PropsWithChildren> = (props) => {
                         type="button"
                         className="rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                       >
-                        <MagnifyingGlassIcon
-                          className="h-6 w-6"
-                          onClick={() => dispatch(setIsSearchingLocation(true))}
-                        />
+                        <MagnifyingGlassIcon className="h-6 w-6" />
                       </button>
                     </div>
                   </div>

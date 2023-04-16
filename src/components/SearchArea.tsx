@@ -4,6 +4,10 @@ import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useAppDispatch, useAppSelector } from "../lib/store";
 import { setIsSearchingLocation, setSelectedCountry, setSelectedRegion } from "../lib/slice";
 
+const capitalizeFirstLetter = (str: string) => {
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+};
+
 const SearchArea: FC<{ open: boolean }> = (props) => {
   const dispatch = useAppDispatch();
 
@@ -61,9 +65,19 @@ const SearchArea: FC<{ open: boolean }> = (props) => {
                         {/*</p>*/}
                       </div>
                     </div>
-                    <div className="relative flex-1 py-6 px-4 sm:px-6">
+                    <div className="relative flex flex-col py-6 px-4 sm:px-6">
                       <CountrySelector />
                       <RegionSelector />
+
+                      <div className="mt-8 self-center">
+                        <button
+                          type="button"
+                          onClick={() => dispatch(setIsSearchingLocation(false))}
+                          className="w-40 rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                        >
+                          Done
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </Dialog.Panel>
@@ -95,7 +109,7 @@ const CountrySelector: FC = () => {
         {countryList.map((country) => {
           return (
             <option key={country.isoCode} value={country.isoCode}>
-              {country.name.toLowerCase()}
+              {capitalizeFirstLetter(country.name)}
             </option>
           );
         })}
