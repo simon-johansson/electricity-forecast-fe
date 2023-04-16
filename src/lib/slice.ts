@@ -1,38 +1,95 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { csv } from "../client";
+import { compareAsc, parse, setHours } from "date-fns";
 
-type Zone = "1" | "2" | "3" | "4";
 type ForecastViewingMode = "table" | "graph";
+
+export interface HourValue {
+  time: string;
+  price: number;
+}
+
+export interface DayData {
+  date: string;
+  series: HourValue[];
+}
+
+export interface RegionData {
+  name: string;
+  days: DayData[];
+}
 
 interface State {
   forecastViewingMode: ForecastViewingMode;
   isSearchingLocation: boolean;
-  zone: Zone;
-  countryCode: string;
+  isLoading: boolean;
+  countryList: csv.CountrySimple[];
+  selectedCountry?: csv.CountrySimple;
+  selectedRegion?: string;
+  regionData?: RegionData;
 }
 
 const initialState: State = {
-  zone: "3",
+  isLoading: true,
   forecastViewingMode: "table",
   isSearchingLocation: false,
-  countryCode: "SE",
+  countryList: [],
 };
 
 const forecastSlice = createSlice({
   name: "forecastSlice",
   initialState,
   reducers: {
-    // increment: (state) => {
-    //   state.value += 1;
-    // },
-    // decrement: (state) => {
-    //   state.value -= 1;
-    // },
-    // incrementByAmount: (state, action: PayloadAction<number>) => {
-    //   state.value += action.payload;
-    // },
-    setZone: (state, action: PayloadAction<Zone>) => {
-      state.zone = action.payload;
-      state.isSearchingLocation = false;
+    onCountryListResponse: (state, action: PayloadAction<csv.GetCountryListResponse>) => {
+      const countryList = action.payload.data;
+      countryList.sort((a, b) => {
+        if (a.name < b.name) return -1;
+        if (a.name > b.name) return 1;
+        return 0;
+      });
+
+      const selectedCountry = countryList.find((country) => country.isoCode === "SE")!;
+
+      state.countryList = countryList;
+      state.selectedCountry = selectedCountry;
+      state.selectedRegion = selectedCountry.regions[0];
+    },
+    onCountryResponse: (state, action: PayloadAction<csv.GetCountryResponse>) => {
+      const DATE_RESPONSE_FORMAT = "yyyyLLdd";
+      const responseRegionData = action.payload.data.regions.find(
+        (region) => region.name === state.selectedRegion
+      )!;
+      const regionData: RegionData = {
+        name: responseRegionData.name,
+        days: [],
+      };
+      responseRegionData.days.forEach((region) => {
+        const date = parse(region.date, DATE_RESPONSE_FORMAT, new Date()).toISOString();
+        regionData.days.push({
+          date: date,
+          series: region.time.map((t) => {
+            return {
+              time: setHours(new Date(date), parseInt(t.hour)).toISOString(),
+              price: parseFloat(t.price),
+            };
+          }),
+        });
+      });
+      regionData.days.sort((a, b) => {
+        return compareAsc(Date.parse(a.date), Date.parse(b.date));
+      });
+      state.regionData = regionData;
+    },
+    setSelectedCountry: (state, action: PayloadAction<string>) => {
+      const selectedCountry = state.countryList.find(
+        (country) => country.isoCode === action.payload
+      )!;
+      // console.log(current(selectedCountry));
+      state.selectedCountry = selectedCountry;
+      state.selectedRegion = selectedCountry.regions[0];
+    },
+    setSelectedRegion: (state, action: PayloadAction<string>) => {
+      state.selectedRegion = action.payload;
     },
     setForecastViewingMode: (state, action: PayloadAction<ForecastViewingMode>) => {
       state.forecastViewingMode = action.payload;
@@ -40,8 +97,19 @@ const forecastSlice = createSlice({
     setIsSearchingLocation: (state, action: PayloadAction<boolean>) => {
       state.isSearchingLocation = action.payload;
     },
+    setIsLoading: (state, action: PayloadAction<boolean>) => {
+      state.isLoading = action.payload;
+    },
   },
 });
 
-export const { setZone, setForecastViewingMode, setIsSearchingLocation } = forecastSlice.actions;
+export const {
+  setForecastViewingMode,
+  setIsSearchingLocation,
+  onCountryResponse,
+  onCountryListResponse,
+  setSelectedCountry,
+  setSelectedRegion,
+  setIsLoading,
+} = forecastSlice.actions;
 export default forecastSlice.reducer;

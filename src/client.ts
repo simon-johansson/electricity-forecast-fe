@@ -62,7 +62,14 @@ export interface ClientOptions {
 export namespace csv {
     export interface Country {
         name: string
+        isoCode: string
         regions: Region[]
+    }
+
+    export interface CountrySimple {
+        name: string
+        isoCode: string
+        regions: string[]
     }
 
     export interface Day {
@@ -71,7 +78,7 @@ export namespace csv {
     }
 
     export interface GetCountryListResponse {
-        data: string[]
+        data: CountrySimple[]
     }
 
     export interface GetCountryResponse {
