@@ -126,6 +126,7 @@ const DayChart: FC<{
   // console.log(boundingRect.width);
 
   return (
+    // @ts-ignore
     <div className="w-full" style={{ width: "100%", height: "100%" }} ref={graphRef}>
       <div className="mt-10 border-t border-black/10 pt-4">
         {/*<div className={hoverData.price ? "invisible" : "visible"}>*/}
@@ -180,6 +181,7 @@ const DayChart: FC<{
                 else return null;
               }}
               // labelComponent={<VictoryLabel y={50} x={0} />}
+              // @ts-ignore
               labelComponent={<CustomLine dayMax={dayMax} dayMin={dayMin} />}
               // labelComponent={
               //   <VictoryTooltip dy={-7} constrainToVisibleArea cornerRadius={0} pointerLength={5} />
@@ -637,6 +639,7 @@ const ContainerWrapper: FC<any> = (props) => {
         return datum.y;
       }}
       // labelComponent={<VictoryLabel y={50} x={0} />}
+      // @ts-ignore
       labelComponent={<CustomLine dayMax={100} dayMin={0} />}
       // labelComponent={
       //   <VictoryTooltip dy={-7} constrainToVisibleArea cornerRadius={0} pointerLength={5} />
