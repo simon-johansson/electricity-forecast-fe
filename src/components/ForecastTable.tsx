@@ -1,16 +1,16 @@
-import { FC, Fragment, PropsWithChildren, useMemo, useState } from "react";
+import { FC, Fragment, PropsWithChildren, useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronDownIcon,
   ChevronUpIcon,
-  ClockIcon,
-  CurrencyDollarIcon,
+  CurrencyEuroIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { Dialog, Transition } from "@headlessui/react";
 import { Sticky, StickyContainer } from "react-sticky";
 import { useAppSelector } from "../lib/store";
 import { DayData, HourValue, RegionData } from "../lib/slice";
-import { format, isTomorrow } from "date-fns";
+import { format, isToday, isTomorrow } from "date-fns";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 
 class ForecastManager {
   private readonly regionData: RegionData;
@@ -18,18 +18,36 @@ class ForecastManager {
 
   constructor(regionData: RegionData) {
     this.regionData = regionData;
-    this.days = regionData.days.map((day) => new DayForecast(day));
+    this.days = regionData.days.map((day) => new DayForecast(day, this));
+  }
+
+  get hoursPriceHigh() {
+    let high = this.days[0].hoursPriceHigh;
+    this.days.forEach((day) => {
+      if (day.hoursPriceHigh.price > high.price) high = day.hoursPriceHigh;
+    });
+    return high;
+  }
+
+  get hoursPriceLow() {
+    let low = this.days[0].hoursPriceLow;
+    this.days.forEach((day) => {
+      if (day.hoursPriceLow.price < low.price) low = day.hoursPriceLow;
+    });
+    return low;
   }
 }
 
 class DayForecast {
   private readonly dayData: DayData;
   private readonly date: number;
+  private readonly forecastManager: ForecastManager;
   public readonly timeSpans: TimeSpan[];
 
-  constructor(dayData: DayData) {
+  constructor(dayData: DayData, forecastManager: ForecastManager) {
     this.dayData = dayData;
     this.date = Date.parse(dayData.date);
+    this.forecastManager = forecastManager;
 
     const hourChunks: Array<HourValue[]> = [];
     const spanSize = 6;
@@ -41,9 +59,9 @@ class DayForecast {
   }
 
   get formattedDate() {
-    return isTomorrow(this.date)
-      ? "Tomorrow" + format(this.date, ", d LLL")
-      : format(this.date, "cccc, d LLL");
+    if (isToday(this.date)) return "Today" + format(this.date, ", d LLL");
+    if (isTomorrow(this.date)) return "Tomorrow" + format(this.date, ", d LLL");
+    return format(this.date, "cccc, d LLL");
   }
 
   get hours() {
@@ -64,6 +82,12 @@ class DayForecast {
       if (val.price < low.price) low = val;
     });
     return low;
+  }
+
+  public compareHoursPrice(price: number) {
+    const low = this.forecastManager.hoursPriceLow.price;
+    const high = this.forecastManager.hoursPriceHigh.price;
+    return (price - low) / (high - low);
   }
 
   get timeSpanPriceHigh() {
@@ -148,8 +172,17 @@ export default ForecastTable;
 
 const DayTable: FC<{ dayForecast: DayForecast }> = ({ dayForecast }) => {
   const [viewHourly, setViewHourly] = useState<boolean>(false);
+  const elRef = useRef<HTMLLIElement>(null);
+  const scrollUp = () => {
+    if (elRef.current) elRef.current.scrollIntoView();
+  };
+
+  useEffect(() => {
+    setViewHourly(false);
+  }, [dayForecast]);
+
   return (
-    <li className="overflow-hidden rounded-md bg-white px-4 py-1 shadow">
+    <li className="overflow-hidden rounded-md bg-white px-4 py-1 shadow" ref={elRef}>
       <StickyContainer>
         <ul>
           <li className="relative py-3">
@@ -164,7 +197,7 @@ const DayTable: FC<{ dayForecast: DayForecast }> = ({ dayForecast }) => {
                 distanceFromBottom,
                 calculatedHeight,
               }) => (
-                <span style={style} className="bg-white font-bold">
+                <span style={style} className="z-30 bg-white font-bold">
                   {dayForecast.formattedDate}
                 </span>
               )}
@@ -172,12 +205,12 @@ const DayTable: FC<{ dayForecast: DayForecast }> = ({ dayForecast }) => {
           </li>
 
           {/* description header */}
-          <li className="flex grid grid-cols-3 items-center">
-            <span className="text-xs font-light">
-              <ClockIcon className="ml-4 h-4 w-4" />
-            </span>
-            <span className="text-xs font-light">€/MWh</span>
-          </li>
+          {/*<li className="flex items-center">*/}
+          {/*  <span className="w-[27%] max-w-[100px] text-xs font-light">*/}
+          {/*    <ClockIcon className="ml-4 h-4 w-4" />*/}
+          {/*  </span>*/}
+          {/*  <span className="col-span-3 text-xs font-light">€/MWh</span>*/}
+          {/*</li>*/}
 
           {viewHourly ? (
             <>
@@ -216,11 +249,26 @@ const DayTable: FC<{ dayForecast: DayForecast }> = ({ dayForecast }) => {
               {/*<TimeRow time="22" price={60} />*/}
               {/*<TimeRow time="23" price={60} />*/}
               {dayForecast.hours.map((hourValue) => {
-                const additionalInfo = (() => {
-                  if (hourValue === dayForecast.hoursPriceHigh) return <BadgeExpensive />;
-                  if (hourValue === dayForecast.hoursPriceLow) return <BadgeCheap />;
-                  return undefined;
-                })();
+                // const additionalInfo = (() => {
+                //   if (hourValue === dayForecast.hoursPriceHigh) return <BadgeExpensive />;
+                //   if (hourValue === dayForecast.hoursPriceLow) return <BadgeCheap />;
+                //   return undefined;
+                // })();
+
+                const priceComparedToMax = Math.round(
+                  dayForecast.compareHoursPrice(hourValue.price) * 100
+                );
+                let bgColor = "bg-green-300";
+                if (priceComparedToMax > 30) bgColor = "bg-slate-300";
+                if (priceComparedToMax > 80) bgColor = "bg-red-300";
+                const additionalInfo = (
+                  <div className="relative h-1 flex-1 rounded-full bg-black/5">
+                    <figure
+                      className={`absolute top-0 left-0 h-full rounded-full ${bgColor}`}
+                      style={{ width: priceComparedToMax + "%" }}
+                    ></figure>
+                  </div>
+                );
 
                 return (
                   <TimeRow
@@ -249,14 +297,32 @@ const DayTable: FC<{ dayForecast: DayForecast }> = ({ dayForecast }) => {
               {/*/>*/}
               {/*<TimeRow time="18-00" price={60} />*/}
               {dayForecast.timeSpans.map((timeSpan) => {
-                let textColor = "";
+                // let textColor = "";
                 // if (timeSpan === dayForecast.timeSpanPriceHigh) textColor = "text-red-500";
                 // if (timeSpan === dayForecast.timeSpanPriceLow) textColor = "text-green-500";
-                const additionalInfo = (() => {
-                  if (timeSpan === dayForecast.timeSpanPriceHigh) return <BadgeExpensive />;
-                  if (timeSpan === dayForecast.timeSpanPriceLow) return <BadgeCheap />;
-                  return undefined;
-                })();
+                // const additionalInfo = (() => {
+                //   if (timeSpan === dayForecast.timeSpanPriceHigh) return <BadgeExpensive />;
+                //   if (timeSpan === dayForecast.timeSpanPriceLow) return <BadgeCheap />;
+                //   return undefined;
+                // })();
+
+                const lowPriceComparedToMax = Math.round(
+                  dayForecast.compareHoursPrice(timeSpan.priceLow.price) * 100
+                );
+                const highPriceComparedToMax = Math.round(
+                  dayForecast.compareHoursPrice(timeSpan.priceHigh.price) * 100
+                );
+                const additionalInfo = (
+                  <div className="relative h-1 flex-1 rounded-full bg-black/10">
+                    <figure
+                      className={`absolute top-0 h-full rounded-full bg-slate-400`}
+                      style={{
+                        left: lowPriceComparedToMax + "%",
+                        width: highPriceComparedToMax - lowPriceComparedToMax + "%",
+                      }}
+                    ></figure>
+                  </div>
+                );
 
                 return (
                   <TimeRow
@@ -265,14 +331,21 @@ const DayTable: FC<{ dayForecast: DayForecast }> = ({ dayForecast }) => {
                     price={timeSpan.averagePrice}
                     priceHigh={timeSpan.priceHigh.price}
                     priceLow={timeSpan.priceLow.price}
-                    textColor={textColor}
                     additionalInfo={additionalInfo}
                   />
                 );
               })}
             </>
           )}
-          <ShowHourForHourRow expanded={viewHourly} onClick={() => setViewHourly(!viewHourly)} />
+          <ShowHourForHourRow
+            expanded={viewHourly}
+            onClick={() => {
+              if (viewHourly) {
+                scrollUp();
+              }
+              setViewHourly(!viewHourly);
+            }}
+          />
         </ul>
       </StickyContainer>
     </li>
@@ -293,28 +366,56 @@ const TimeRow: FC<{
   return (
     <li
       // onClick={() => setViewDetails(true)}
-      className={`flex grid grid-cols-3 items-center py-3 ${
+      className={`flex items-center py-3 ${
         props.hideBottomBorder ? "" : "border-b border-gray-200"
       }`}
     >
-      <span className="w-12 text-center text-sm">{props.time}</span>
-      <span
-        className={`text-xl font-semibold ${props.textColor ? props.textColor : "text-gray-900"}`}
+      <div className="flex w-[27%] max-w-[100px] items-center">
+        <span className="w-12 text-center text-sm">{props.time}</span>
+      </div>
+
+      <div
+        className={`relative col-span-3 flex flex-1 items-center  ${
+          props.textColor ? props.textColor : "text-gray-900"
+        }`}
       >
-        <span className="inline-block min-w-[45px]">{Math.floor(props.price)}</span>
-        {props.priceHigh && props.priceLow && (
-          <span className="text-tiny font-light text-gray-500">
-            {Math.floor(props.priceLow)}-{Math.floor(props.priceHigh)}
-          </span>
-        )}
-        {/*<span className="text-tiny font-light text-gray-500"> snitt</span>*/}
-      </span>
-      <div className="flex items-center justify-end">
+        <span className="relative inline-block min-w-[90px] text-lg font-semibold">
+          {/*<div className="absolute -top-[10px] -right-[0px]">{props.additionalInfo}</div>*/}
+          {Math.floor(props.price)}
+          {/*{props.priceLow ? Math.floor(props.priceLow) : Math.floor(props.price)}*/}
+          <span className="col-span-3 ml-1 text-tiny font-light">€/MWh</span>
+        </span>
+
+        {/*<Tooltip open placement="top-start">*/}
+        {/*  <TooltipTrigger>Test</TooltipTrigger>*/}
+        {/*  <TooltipContent>This is a test</TooltipContent>*/}
+        {/*</Tooltip>*/}
+
         {props.additionalInfo}
-        {/*<div>*/}
-        {/*  <ChevronRightIcon className="ml-3 h-5 w-5 text-gray-400" />*/}
+
+        {/*{props.priceHigh && (*/}
+        {/*  <span className="relative inline-block min-w-[45px] text-right text-lg font-semibold">*/}
+        {/*    {Math.floor(props.priceHigh)}*/}
+        {/*  </span>*/}
+        {/*)}*/}
+
+        {/*{typeof props.priceHigh !== "undefined" && typeof props.priceLow !== "undefined" && (*/}
+        {/*  <span className="text-tiny font-light text-gray-500">*/}
+        {/*    {Math.floor(props.priceLow)}-{Math.floor(props.priceHigh)}*/}
+        {/*  </span>*/}
+        {/*)}*/}
+
+        {/*<div className="relative h-1 flex-1 rounded-full bg-black/5">*/}
+        {/*  <figure className="absolute top-0 left-0 h-full w-[40px] rounded-full bg-red-300"></figure>*/}
         {/*</div>*/}
       </div>
+
+      {/*<div className="flex items-center justify-end">*/}
+      {/*{props.additionalInfo}*/}
+      {/*<div>*/}
+      {/*  <ChevronRightIcon className="ml-3 h-5 w-5 text-gray-400" />*/}
+      {/*</div>*/}
+      {/*</div>*/}
       <DetailedViewModal open={viewDetails} setOpen={setViewDetails}>
         <div>
           <Dialog.Title as="h3" className="font-bold leading-6">
@@ -335,15 +436,15 @@ const TimeRow: FC<{
 const ShowHourForHourRow: FC<{ expanded: boolean; onClick: () => void }> = (props) => {
   return (
     <li onClick={props.onClick}>
-      <div className="flex w-full items-center justify-center py-3 text-gray-500">
+      <div className="flex w-full cursor-pointer items-center justify-center py-3 text-gray-500">
         {props.expanded ? (
           <>
-            <span className="text-xs">Visa summering</span>
+            <span className="text-xs">Summary</span>
             <ChevronUpIcon className="ml-2 h-3 w-3" />
           </>
         ) : (
           <>
-            <span className="text-xs">Visa varje timme</span>
+            <span className="text-xs">Hourly</span>
             <ChevronDownIcon className="ml-2 h-3 w-3" />
           </>
         )}
@@ -402,20 +503,22 @@ const DetailedViewModal: FC<
   );
 };
 
-const BadgeCheap: FC<{}> = () => {
+export const BadgeCheap: FC<{}> = () => {
   return (
-    <span className="flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-      <CurrencyDollarIcon className="-ml-2 mr-0.5 h-5 w-5 text-green-500" />
-      Low
+    <span className="flex items-center rounded-full bg-green-100  text-xs font-medium text-green-800">
+      {/*<CurrencyDollarIcon className="h-5 w-5 text-green-500" />*/}
+      <CurrencyEuroIcon className="h-5 w-5 text-green-500" />
+      {/*Low*/}
     </span>
   );
 };
 
-const BadgeExpensive: FC<{}> = () => {
+export const BadgeExpensive: FC<{}> = () => {
   return (
-    <span className="flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800">
-      <CurrencyDollarIcon className="-ml-2 mr-0.5 h-5 w-5 text-red-500" />
-      High
+    <span className="flex items-center rounded-full bg-red-100 text-xs font-medium text-red-800">
+      {/*<CurrencyDollarIcon className="h-5 w-5 text-red-500" />*/}
+      <CurrencyEuroIcon className="h-5 w-5 text-red-500" />
+      {/*High*/}
     </span>
   );
 };

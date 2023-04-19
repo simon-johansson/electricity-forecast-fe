@@ -7,6 +7,7 @@ import { setForecastViewingMode, setIsSearchingLocation } from "../lib/slice";
 import ForecastTable from "./ForecastTable";
 import ForecastGraph from "./ForecastGraph";
 import { CircleFlag } from "react-circle-flags";
+import Footer from "./Footer";
 
 const Layout: FC<PropsWithChildren> = (props) => {
   const { selectedRegion, selectedCountry, isSearchingLocation, forecastViewingMode } =
@@ -23,38 +24,45 @@ const Layout: FC<PropsWithChildren> = (props) => {
           <Disclosure as="nav" className="border-b border-gray-200 bg-white">
             {({ open }) => (
               <>
-                <div
-                  className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"
-                  onClick={() => dispatch(setIsSearchingLocation(true))}
-                >
-                  <div className="flex h-16 justify-between">
-                    <div className="flex">
-                      <div className="flex flex-shrink-0 items-center">
-                        <CircleFlag
-                          countryCode={selectedCountry.isoCode.toLowerCase()}
-                          className="h-8 w-8"
-                        />
+                <div className="grid grid-cols-2 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+                  <div className="col-span-2 sm:col-span-1">
+                    <h1 className="mb-4 font-semibold leading-6 sm:mb-0">
+                      Energy Price Forecasts For Europe
+                    </h1>
+                  </div>
+                  <div
+                    className="col-span-2 flex justify-end sm:col-span-1"
+                    onClick={() => dispatch(setIsSearchingLocation(true))}
+                  >
+                    <div className="flex w-full max-w-[400px] cursor-pointer justify-between rounded border border-black/30 px-2 py-1 sm:w-fit sm:justify-start">
+                      <div className="flex">
+                        <div className="flex flex-shrink-0 items-center">
+                          <CircleFlag
+                            countryCode={selectedCountry.isoCode.toLowerCase()}
+                            className="h-5 w-5"
+                          />
+                        </div>
+
+                        <div className="flex">
+                          <p className="ml-3 inline-flex items-center whitespace-nowrap text-gray-500">
+                            <span className="font-bold capitalize">
+                              {selectedCountry.name.toLowerCase()}
+                            </span>
+                            {selectedCountry.regions.length > 1 && (
+                              <span className="ml-2">({selectedRegion})</span>
+                            )}
+                          </p>
+                        </div>
                       </div>
-                      <div className="flex sm:-my-px sm:ml-6 sm:space-x-8">
-                        <p
-                          className={
-                            "inline-flex items-center pl-5 pt-1 text-base font-bold text-gray-500"
-                          }
+
+                      <div className="ml-8 flex items-center">
+                        <button
+                          type="button"
+                          className="rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                         >
-                          <span className="capitalize">{selectedCountry.name.toLowerCase()}</span>
-                          {selectedCountry.regions.length > 1 && (
-                            <span className="ml-2">({selectedRegion})</span>
-                          )}
-                        </p>
+                          <MagnifyingGlassIcon className="h-6 w-6" />
+                        </button>
                       </div>
-                    </div>
-                    <div className="flex items-center sm:ml-6">
-                      <button
-                        type="button"
-                        className="rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                      >
-                        <MagnifyingGlassIcon className="h-6 w-6" />
-                      </button>
                     </div>
                   </div>
                 </div>
@@ -64,8 +72,8 @@ const Layout: FC<PropsWithChildren> = (props) => {
 
           <SearchArea open={isSearchingLocation} />
 
-          <div className="bg-gray-100 py-5">
-            <main className="mx-auto max-w-7xl px-4 sm:px-6">
+          <div className="bg-gray-100 py-5 pb-0">
+            <main className="mx-auto max-w-screen-sm px-4 sm:px-6">
               <div className="flex items-center justify-center pb-5">
                 <span className="isolate flex rounded-md shadow-sm">
                   <button
@@ -84,6 +92,7 @@ const Layout: FC<PropsWithChildren> = (props) => {
                   >
                     Table
                   </button>
+
                   <button
                     type="button"
                     onClick={() => dispatch(setForecastViewingMode("graph"))}
@@ -107,7 +116,7 @@ const Layout: FC<PropsWithChildren> = (props) => {
               {forecastViewingMode === "graph" && <ForecastGraph />}
             </main>
 
-            <section className="mt-20 border-t border-gray-200 bg-gray-50 py-20">
+            <section className="mt-20 border-t border-b border-gray-200 bg-gray-50 py-20">
               {/*<div className="w-full pt-8 ">*/}
               {/*  <h2 className="text-3xl font-bold">Frågor och svar</h2>*/}
               {/*  <div className="mt-4">*/}
@@ -171,9 +180,10 @@ const Layout: FC<PropsWithChildren> = (props) => {
                       How accurate is the forecast?
                     </h3>
                     <p className="mt-4 text-sm text-gray-700">
-                      Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ab blanditiis
-                      consequatur distinctio et explicabo hic laborum, magni natus nesciunt pariatur
-                      provident quaerat quo repellat sed tenetur ullam ut voluptatem voluptatibus!
+                      Energy price forecasts can provide useful insights into potential price
+                      movements, but they are not always 100% accurate. While this energy price
+                      forecast may not be perfect, it can still help you make informed decisions
+                      about your energy usage and budget planning.
                     </p>
                   </li>
                   <li>
@@ -181,9 +191,10 @@ const Layout: FC<PropsWithChildren> = (props) => {
                       Is the forecast relevant for me?
                     </h3>
                     <p className="mt-4 text-sm text-gray-700">
-                      Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ab blanditiis
-                      consequatur distinctio et explicabo hic laborum, magni natus nesciunt pariatur
-                      provident quaerat quo repellat sed tenetur ullam ut voluptatem voluptatibus!
+                      Energy price forecasts are relevant for you to make informed decisions about
+                      your energy usage and finances. By keeping an eye on energy price forecasts,
+                      you can anticipate potential price increases, adjust your energy usage
+                      accordingly, and potentially save money.
                     </p>
                   </li>
                   <li>
@@ -191,24 +202,28 @@ const Layout: FC<PropsWithChildren> = (props) => {
                       How is the forecast created?
                     </h3>
                     <p className="mt-4 text-sm text-gray-700">
-                      Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ab blanditiis
-                      consequatur distinctio et explicabo hic laborum, magni natus nesciunt pariatur
-                      provident quaerat quo repellat sed tenetur ullam ut voluptatem voluptatibus!
+                      Our forecast is a fundamental forecast model based on the principle of supply
+                      and demand. The model attempts to predict future electricity prices by
+                      analyzing the underlying factors that affect supply and demand. These factors
+                      can include weather patterns, economic trends, fuel prices, generation
+                      capacity, and transmission constraints.
                     </p>
                   </li>
-                  <li>
-                    <h3 className="text-lg font-semibold leading-6 text-gray-900">
-                      How can I make use if the forecast?
-                    </h3>
-                    <p className="mt-4 text-sm text-gray-700">
-                      Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ab blanditiis
-                      consequatur distinctio et explicabo hic laborum, magni natus nesciunt pariatur
-                      provident quaerat quo repellat sed tenetur ullam ut voluptatem voluptatibus!
-                    </p>
-                  </li>
+                  {/*<li>*/}
+                  {/*  <h3 className="text-lg font-semibold leading-6 text-gray-900">*/}
+                  {/*    How can I make use if the forecast?*/}
+                  {/*  </h3>*/}
+                  {/*  <p className="mt-4 text-sm text-gray-700">*/}
+                  {/*    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ab blanditiis*/}
+                  {/*    consequatur distinctio et explicabo hic laborum, magni natus nesciunt pariatur*/}
+                  {/*    provident quaerat quo repellat sed tenetur ullam ut voluptatem voluptatibus!*/}
+                  {/*  </p>*/}
+                  {/*</li>*/}
                 </ul>
               </div>
             </section>
+
+            <Footer />
           </div>
         </div>
       </div>

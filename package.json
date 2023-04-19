@@ -11,6 +11,7 @@
     "gen:local": "encore gen client electricity-forecast-k4k2 --output=./src/client.ts --env=local"
   },
   "dependencies": {
+    "@floating-ui/react": "^0.23.0",
     "@headlessui/react": "^1.7.11",
     "@heroicons/react": "^2.0.16",
     "@reduxjs/toolkit": "^1.9.3",
@@ -23,6 +24,7 @@
     "react-dom": "^18.2.0",
     "react-redux": "^8.0.5",
     "react-sticky": "^6.0.3",
+    "react-use": "^17.4.0",
     "recharts": "^2.4.1",
     "victory": "^36.6.8"
   },
