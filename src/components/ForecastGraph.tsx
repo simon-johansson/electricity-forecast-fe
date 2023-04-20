@@ -109,14 +109,16 @@ const DayChart: FC<{
     return [min!, max!];
   }, [days]);
 
-  const [dayMin, dayMax] = useMemo(() => {
+  const [dayMin, dayMax, dayAverage] = useMemo(() => {
     let min: undefined | number;
     let max: undefined | number;
+    let average = 0;
     selectedDay.series.forEach(({ price }) => {
       if (min === undefined || price < min) min = price;
       if (max === undefined || price > max) max = price;
+      average += price;
     });
-    return [min!, max!];
+    return [min!, max!, average / selectedDay.series.length];
   }, [selectedDay]);
 
   const timeSeries = useMemo(() => {
@@ -125,6 +127,7 @@ const DayChart: FC<{
 
   // console.log(boundingRect.width);
 
+  // @ts-ignore
   return (
     // @ts-ignore
     <div className="w-full" style={{ width: "100%", height: "100%" }} ref={graphRef}>
@@ -166,6 +169,8 @@ const DayChart: FC<{
               // onActivated={() => console.log("active")}
               // onDeactivated={() => console.log("deactive")}
               voronoiDimension="x"
+              // onActivated={() => console.log("onActivated")}
+              // onDeactivated={() => console.log("onDeactivated")}
               voronoiBlacklist={["areaBackground", "dayBars", "priceLine"]}
               labels={(data) => {
                 // console.log(data);
@@ -181,8 +186,10 @@ const DayChart: FC<{
                 else return null;
               }}
               // labelComponent={<VictoryLabel y={50} x={0} />}
-              // @ts-ignore
-              labelComponent={<CustomLine dayMax={dayMax} dayMin={dayMin} />}
+              labelComponent={
+                // @ts-ignore
+                <CustomLine dayMax={dayMax} dayMin={dayMin} />
+              }
               // labelComponent={
               //   <VictoryTooltip dy={-7} constrainToVisibleArea cornerRadius={0} pointerLength={5} />
               // }
@@ -206,12 +213,43 @@ const DayChart: FC<{
           {/*  </div>*/}
           {/*</foreignObject>*/}
 
+          {/*<VictoryBar*/}
+          {/*  labels={() => "average"}*/}
+          {/*  style={{ data: { fill: "transparent" } }}*/}
+          {/*  labelComponent={<CustomLine />}*/}
+          {/*  data={timeSeries}*/}
+          {/*/>*/}
+
+          <MyCustomLabel
+            hide={isTouching}
+            dayMax={dayMax}
+            dayMin={dayMin}
+            dayAverage={dayAverage}
+          />
+
+          {/*<VictoryLabel*/}
+          {/*  text={"add labels"}*/}
+          {/*  textComponent={*/}
+          {/*    <foreignObject x={10} y={-7} width="80" height="50">*/}
+          {/*      <div className="left w-full">*/}
+          {/*        <span className="mr-1 text-lg font-semibold">87</span>*/}
+          {/*        <span className="text-xs">€/MWh</span>*/}
+          {/*        <span className="block text-xs">H:40 L:10</span>*/}
+          {/*      </div>*/}
+          {/*    </foreignObject>*/}
+          {/*  }*/}
+          {/*  x={0}*/}
+          {/*  y={0}*/}
+          {/*/>*/}
+
+          {/*<WrapperComponent>*/}
           <VictoryAxis
             dependentAxis
             axisComponent={<LineSegment style={{ opacity: 0.1 }} />}
             tickLabelComponent={<VictoryLabel dy={0} dx={5} />}
             // style={{ ticks: { stroke: "red", size: 20 } }}
           />
+          {/*</WrapperComponent>*/}
 
           <VictoryAxis
             axisComponent={<LineSegment style={{ opacity: 0.1 }} />}
@@ -562,17 +600,21 @@ const CustomLabel: FC = (props: any) => {
   // return <circle cx={props.x} cy={props.y} r={8} fill={"#22c55e"} />;
 };
 
-const CustomLine: FC = (props: any) => {
-  const price = Math.round(props.text[0]);
-  const time = format(props.datum.x, "HH:mm");
-  const isMax = props.datum.y === props.dayMax;
-  const isMin = props.datum.y === props.dayMin;
-  const stroke = (() => {
-    if (isMax) return "#ef4444";
-    if (isMin) return "#22c55e";
-    return "#4f46e5";
-  })();
+const MyCustomLabel = (props: any) => {
+  return (
+    <foreignObject x={10} y={-7} width="80" height="50">
+      <div className={`left w-full ${props.hide ? "hidden" : ""}`}>
+        <span className="mr-1 text-lg font-semibold">{Math.round(props.dayAverage)}</span>
+        <span className="text-xs">€/MWh</span>
+        <span className="block text-xs">
+          H:{Math.round(props.dayMax)} L:{Math.round(props.dayMin)}
+        </span>
+      </div>
+    </foreignObject>
+  );
+};
 
+const CustomLine: FC = (props: any) => {
   // return (
   //   <>
   //     <foreignObject x={props.x - 40} y={-30} width="80" height="40">
@@ -587,8 +629,17 @@ const CustomLine: FC = (props: any) => {
   //   </>
   // );
 
-  if (price === null) return null;
+  if (props.text[0] === null) return null;
 
+  const price = Math.round(props.text[0]);
+  const time = format(props.datum.x, "HH:mm");
+  const isMax = props.datum.y === props.dayMax;
+  const isMin = props.datum.y === props.dayMin;
+  const stroke = (() => {
+    if (isMax) return "#ef4444";
+    if (isMin) return "#22c55e";
+    return "#4f46e5";
+  })();
   return (
     <>
       {/*<VictoryTooltip dy={-7} constrainToVisibleArea cornerRadius={0} pointerLength={5} />*/}
@@ -647,3 +698,25 @@ const ContainerWrapper: FC<any> = (props) => {
     />
   );
 };
+
+class WrapperComponent extends React.Component {
+  renderChildren() {
+    // @ts-ignore
+    const children = React.Children.toArray(this.props.children);
+    return children.map((child) => {
+      // @ts-ignore
+      const style = { ...child.props.style, ...this.props.style };
+      // @ts-ignore
+      return React.cloneElement(child, Object.assign({}, child.props, this.props, { style }));
+    });
+  }
+
+  render() {
+    return (
+      <g>
+        <VictoryLabel text={"add labels"} x={110} y={30} />
+        {this.renderChildren()}
+      </g>
+    );
+  }
+}

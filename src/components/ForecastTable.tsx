@@ -10,7 +10,6 @@ import { Sticky, StickyContainer } from "react-sticky";
 import { useAppSelector } from "../lib/store";
 import { DayData, HourValue, RegionData } from "../lib/slice";
 import { format, isToday, isTomorrow } from "date-fns";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 
 class ForecastManager {
   private readonly regionData: RegionData;
@@ -321,6 +320,22 @@ const DayTable: FC<{ dayForecast: DayForecast }> = ({ dayForecast }) => {
                         width: highPriceComparedToMax - lowPriceComparedToMax + "%",
                       }}
                     ></figure>
+                    <span
+                      className="absolute -top-[17px] text-tiny text-slate-400"
+                      style={{
+                        left: lowPriceComparedToMax + "%",
+                      }}
+                    >
+                      {Math.round(timeSpan.priceLow.price)}
+                    </span>
+                    <span
+                      className="absolute -top-[17px] text-tiny text-slate-400"
+                      style={{
+                        right: 100 - highPriceComparedToMax + "%",
+                      }}
+                    >
+                      {Math.round(timeSpan.priceHigh.price)}
+                    </span>
                   </div>
                 );
 
