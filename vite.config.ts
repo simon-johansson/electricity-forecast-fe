@@ -11,6 +11,7 @@ const sentryConfig: ViteSentryPluginOptions = {
   },
   setCommits: {
     auto: true,
+    ignoreMissing: true,
   },
   sourceMaps: {
     include: ["./dist/assets"],
