@@ -1,11 +1,17 @@
+import * as Sentry from "@sentry/react";
 import { Action, configureStore, ThunkAction } from "@reduxjs/toolkit";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 import slice from "./slice";
+
+const sentryReduxEnhancer = Sentry.createReduxEnhancer({
+  // Optionally pass options listed below
+});
 
 export const store = configureStore({
   reducer: {
     forecastSlice: slice,
   },
+  enhancers: [sentryReduxEnhancer],
 });
 
 export type AppDispatch = typeof store.dispatch;

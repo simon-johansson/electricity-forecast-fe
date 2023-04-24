@@ -152,6 +152,25 @@ const DayChart: FC<{
         <VictoryChart
           padding={{ left: 30, top: 60, right: 10, bottom: 35 }}
           height={300}
+          theme={{
+            axis: {
+              style: {
+                axis: { fill: "transparent" },
+                axisLabel: { fontFamily: "Inter", padding: 25 },
+                grid: {
+                  fill: "none",
+                  stroke: "none",
+                  pointerEvents: "painted",
+                },
+                ticks: {
+                  fill: "transparent",
+                  size: 1,
+                  stroke: "transparent",
+                },
+                tickLabels: { fontFamily: "Inter", padding: 10 },
+              },
+            },
+          }}
           width={boundingRect.width}
           // height={width > 1000 ? 200 : 300}
           domain={{ y: [domainYMin - 10, domainYMax + 10] }}
@@ -679,7 +698,6 @@ const ContainerWrapper: FC<any> = (props) => {
       voronoiDimension="x"
       voronoiBlacklist={["areaBackground", "dayBars", "priceLine"]}
       labels={(data) => {
-        console.log(data);
         const { datum } = data;
         // if (hoverData.time !== datum.x) {
         //   setHoverData({

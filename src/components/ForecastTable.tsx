@@ -8,145 +8,9 @@ import {
 import { Dialog, Transition } from "@headlessui/react";
 import { Sticky, StickyContainer } from "react-sticky";
 import { useAppSelector } from "../lib/store";
-import { DayData, HourValue, RegionData } from "../lib/slice";
-import { format, isToday, isTomorrow } from "date-fns";
-
-class ForecastManager {
-  private readonly regionData: RegionData;
-  public readonly days: DayForecast[];
-
-  constructor(regionData: RegionData) {
-    this.regionData = regionData;
-    this.days = regionData.days.map((day) => new DayForecast(day, this));
-  }
-
-  get hoursPriceHigh() {
-    let high = this.days[0].hoursPriceHigh;
-    this.days.forEach((day) => {
-      if (day.hoursPriceHigh.price > high.price) high = day.hoursPriceHigh;
-    });
-    return high;
-  }
-
-  get hoursPriceLow() {
-    let low = this.days[0].hoursPriceLow;
-    this.days.forEach((day) => {
-      if (day.hoursPriceLow.price < low.price) low = day.hoursPriceLow;
-    });
-    return low;
-  }
-}
-
-class DayForecast {
-  private readonly dayData: DayData;
-  private readonly date: number;
-  private readonly forecastManager: ForecastManager;
-  public readonly timeSpans: TimeSpan[];
-
-  constructor(dayData: DayData, forecastManager: ForecastManager) {
-    this.dayData = dayData;
-    this.date = Date.parse(dayData.date);
-    this.forecastManager = forecastManager;
-
-    const hourChunks: Array<HourValue[]> = [];
-    const spanSize = 6;
-    for (let i = 0; i < dayData.series.length; i += spanSize) {
-      const chunk = dayData.series.slice(i, i + spanSize);
-      hourChunks.push(chunk);
-    }
-    this.timeSpans = hourChunks.map((span) => new TimeSpan(span));
-  }
-
-  get formattedDate() {
-    if (isToday(this.date)) return "Today" + format(this.date, ", d LLL");
-    if (isTomorrow(this.date)) return "Tomorrow" + format(this.date, ", d LLL");
-    return format(this.date, "cccc, d LLL");
-  }
-
-  get hours() {
-    return this.dayData.series;
-  }
-
-  get hoursPriceHigh() {
-    let high = this.hours[0];
-    this.hours.forEach((val) => {
-      if (val.price > high.price) high = val;
-    });
-    return high;
-  }
-
-  get hoursPriceLow() {
-    let low = this.hours[0];
-    this.hours.forEach((val) => {
-      if (val.price < low.price) low = val;
-    });
-    return low;
-  }
-
-  public compareHoursPrice(price: number) {
-    const low = this.forecastManager.hoursPriceLow.price;
-    const high = this.forecastManager.hoursPriceHigh.price;
-    return (price - low) / (high - low);
-  }
-
-  get timeSpanPriceHigh() {
-    let high = this.timeSpans[0];
-    this.timeSpans.forEach((span) => {
-      if (span.averagePrice > high.averagePrice) high = span;
-    });
-    return high;
-  }
-
-  get timeSpanPriceLow() {
-    let low = this.timeSpans[0];
-    this.timeSpans.forEach((span) => {
-      if (span.averagePrice < low.averagePrice) low = span;
-    });
-    return low;
-  }
-}
-
-class TimeSpan {
-  private readonly hours: HourValue[];
-
-  // private readonly date: number;
-
-  constructor(hours: HourValue[]) {
-    this.hours = hours;
-    // this.date = Date.parse(hours.);
-  }
-
-  get formattedTime() {
-    const getHours = (date: string) => {
-      return format(Date.parse(date), "HH");
-    };
-    const start = getHours(this.hours[0].time);
-    const end = getHours(this.hours[this.hours.length - 1].time);
-    return `${start}-${end}`;
-  }
-
-  get averagePrice() {
-    let total = 0;
-    this.hours.forEach((hour) => (total += hour.price));
-    return Math.floor(total / this.hours.length);
-  }
-
-  get priceHigh() {
-    let high = this.hours[0];
-    this.hours.forEach((val) => {
-      if (val.price > high.price) high = val;
-    });
-    return high;
-  }
-
-  get priceLow() {
-    let low = this.hours[0];
-    this.hours.forEach((val) => {
-      if (val.price < low.price) low = val;
-    });
-    return low;
-  }
-}
+import { format } from "date-fns";
+import { HorizontalBanner } from "./Layout";
+import ForecastManager, { DayForecast } from "../lib/ForecastManager";
 
 const ForecastTable: FC<{}> = () => {
   const { regionData } = useAppSelector((state) => state.forecastSlice);
@@ -158,9 +22,14 @@ const ForecastTable: FC<{}> = () => {
 
   return (
     <div>
-      <ul className="space-y-3">
-        {forecastManager.days.map((dayForecast) => (
-          <DayTable key={dayForecast.formattedDate} dayForecast={dayForecast} />
+      <ul className="space-y-6">
+        {forecastManager.days.map((dayForecast, index) => (
+          <Fragment key={dayForecast.formattedDate}>
+            <DayTable key={dayForecast.formattedDate} dayForecast={dayForecast} />
+            <div className="flex h-20 md:hidden">
+              <HorizontalBanner />
+            </div>
+          </Fragment>
         ))}
       </ul>
     </div>
@@ -186,16 +55,7 @@ const DayTable: FC<{ dayForecast: DayForecast }> = ({ dayForecast }) => {
         <ul>
           <li className="relative py-3">
             <Sticky topOffset={10}>
-              {({
-                style,
-
-                // the following are also available but unused in this example
-                isSticky,
-                wasSticky,
-                distanceFromTop,
-                distanceFromBottom,
-                calculatedHeight,
-              }) => (
+              {({ style }) => (
                 <span style={style} className="z-30 bg-white font-bold">
                   {dayForecast.formattedDate}
                 </span>
@@ -203,57 +63,8 @@ const DayTable: FC<{ dayForecast: DayForecast }> = ({ dayForecast }) => {
             </Sticky>
           </li>
 
-          {/* description header */}
-          {/*<li className="flex items-center">*/}
-          {/*  <span className="w-[27%] max-w-[100px] text-xs font-light">*/}
-          {/*    <ClockIcon className="ml-4 h-4 w-4" />*/}
-          {/*  </span>*/}
-          {/*  <span className="col-span-3 text-xs font-light">€/MWh</span>*/}
-          {/*</li>*/}
-
-          {viewHourly ? (
-            <>
-              {/*<TimeRow*/}
-              {/*  time="00"*/}
-              {/*  price={54}*/}
-              {/*  textColor="text-green-500"*/}
-              {/*  additionalInfo={<BadgeCheap />}*/}
-              {/*/>*/}
-              {/*<TimeRow time="01" price={56} />*/}
-              {/*<TimeRow time="02" price={70} />*/}
-              {/*<TimeRow time="03" price={23} />*/}
-              {/*<TimeRow time="04" price={65} />*/}
-              {/*<TimeRow time="05" price={60} />*/}
-              {/*<TimeRow time="06" price={67} />*/}
-              {/*<TimeRow time="07" price={60} />*/}
-              {/*<TimeRow time="08" price={60} />*/}
-              {/*<TimeRow time="09" price={60} />*/}
-              {/*<TimeRow time="10" price={60} />*/}
-              {/*<TimeRow time="11" price={60} />*/}
-              {/*<TimeRow time="12" price={60} />*/}
-              {/*<TimeRow time="13" price={60} />*/}
-              {/*<TimeRow time="14" price={60} />*/}
-              {/*<TimeRow time="15" price={60} />*/}
-              {/*<TimeRow time="16" price={60} />*/}
-              {/*<TimeRow time="17" price={60} />*/}
-              {/*<TimeRow time="18" price={60} />*/}
-              {/*<TimeRow*/}
-              {/*  time="19"*/}
-              {/*  price={60}*/}
-              {/*  textColor="text-red-500"*/}
-              {/*  additionalInfo={<BadgeExpensive />}*/}
-              {/*/>*/}
-              {/*<TimeRow time="20" price={60} />*/}
-              {/*<TimeRow time="21" price={60} />*/}
-              {/*<TimeRow time="22" price={60} />*/}
-              {/*<TimeRow time="23" price={60} />*/}
-              {dayForecast.hours.map((hourValue) => {
-                // const additionalInfo = (() => {
-                //   if (hourValue === dayForecast.hoursPriceHigh) return <BadgeExpensive />;
-                //   if (hourValue === dayForecast.hoursPriceLow) return <BadgeCheap />;
-                //   return undefined;
-                // })();
-
+          {viewHourly
+            ? dayForecast.hours.map((hourValue) => {
                 const priceComparedToMax = Math.round(
                   dayForecast.compareHoursPrice(hourValue.price) * 100
                 );
@@ -277,40 +88,17 @@ const DayTable: FC<{ dayForecast: DayForecast }> = ({ dayForecast }) => {
                     additionalInfo={additionalInfo}
                   />
                 );
-              })}
-            </>
-          ) : (
-            <>
-              {/*<TimeRow*/}
-              {/*  time="00-06"*/}
-              {/*  price={54}*/}
-              {/*  textColor="text-green-500"*/}
-              {/*  // additionalInfo={<BadgeCheap />}*/}
-              {/*/>*/}
-              {/*<TimeRow time="06-12" price={56} />*/}
-              {/*<TimeRow*/}
-              {/*  time="12-18"*/}
-              {/*  price={70}*/}
-              {/*  textColor="text-red-500"*/}
-              {/*  additionalInfo={<BadgeExpensive />}*/}
-              {/*/>*/}
-              {/*<TimeRow time="18-00" price={60} />*/}
-              {dayForecast.timeSpans.map((timeSpan) => {
-                // let textColor = "";
-                // if (timeSpan === dayForecast.timeSpanPriceHigh) textColor = "text-red-500";
-                // if (timeSpan === dayForecast.timeSpanPriceLow) textColor = "text-green-500";
-                // const additionalInfo = (() => {
-                //   if (timeSpan === dayForecast.timeSpanPriceHigh) return <BadgeExpensive />;
-                //   if (timeSpan === dayForecast.timeSpanPriceLow) return <BadgeCheap />;
-                //   return undefined;
-                // })();
-
+              })
+            : dayForecast.timeSpans.map((timeSpan) => {
                 const lowPriceComparedToMax = Math.round(
                   dayForecast.compareHoursPrice(timeSpan.priceLow.price) * 100
                 );
                 const highPriceComparedToMax = Math.round(
                   dayForecast.compareHoursPrice(timeSpan.priceHigh.price) * 100
                 );
+                const lowPriceLen = Math.round(timeSpan.priceLow.price).toString().length;
+                // const highPriceLen = Math.round(timeSpan.priceHigh.price).toString().length;
+
                 const additionalInfo = (
                   <div className="relative h-1 flex-1 rounded-full bg-black/10">
                     <figure
@@ -320,22 +108,19 @@ const DayTable: FC<{ dayForecast: DayForecast }> = ({ dayForecast }) => {
                         width: highPriceComparedToMax - lowPriceComparedToMax + "%",
                       }}
                     ></figure>
-                    <span
-                      className="absolute -top-[17px] text-tiny text-slate-400"
+                    <div
+                      className={`absolute -top-[17px] flex items-center justify-between text-tiny text-slate-400 min-w[${
+                        lowPriceLen > 2 ? 40 : 32
+                      }px]`}
                       style={{
-                        left: lowPriceComparedToMax + "%",
+                        left: `${Math.min(lowPriceComparedToMax, 100)}%`,
+                        right: `${Math.max(100 - highPriceComparedToMax, 2)}%`,
                       }}
                     >
-                      {Math.round(timeSpan.priceLow.price)}
-                    </span>
-                    <span
-                      className="absolute -top-[17px] text-tiny text-slate-400"
-                      style={{
-                        right: 100 - highPriceComparedToMax + "%",
-                      }}
-                    >
-                      {Math.round(timeSpan.priceHigh.price)}
-                    </span>
+                      <span className="mr-2">{Math.round(timeSpan.priceLow.price)}</span>
+                      {/*{highPriceComparedToMax - lowPriceComparedToMax < 25 && "-"}*/}
+                      <span>{Math.round(timeSpan.priceHigh.price)}</span>
+                    </div>
                   </div>
                 );
 
@@ -350,14 +135,11 @@ const DayTable: FC<{ dayForecast: DayForecast }> = ({ dayForecast }) => {
                   />
                 );
               })}
-            </>
-          )}
+
           <ShowHourForHourRow
             expanded={viewHourly}
             onClick={() => {
-              if (viewHourly) {
-                scrollUp();
-              }
+              if (viewHourly) scrollUp();
               setViewHourly(!viewHourly);
             }}
           />
@@ -395,42 +177,13 @@ const TimeRow: FC<{
         }`}
       >
         <span className="relative inline-block min-w-[90px] text-lg font-semibold">
-          {/*<div className="absolute -top-[10px] -right-[0px]">{props.additionalInfo}</div>*/}
           {Math.floor(props.price)}
-          {/*{props.priceLow ? Math.floor(props.priceLow) : Math.floor(props.price)}*/}
           <span className="col-span-3 ml-1 text-tiny font-light">€/MWh</span>
         </span>
 
-        {/*<Tooltip open placement="top-start">*/}
-        {/*  <TooltipTrigger>Test</TooltipTrigger>*/}
-        {/*  <TooltipContent>This is a test</TooltipContent>*/}
-        {/*</Tooltip>*/}
-
         {props.additionalInfo}
-
-        {/*{props.priceHigh && (*/}
-        {/*  <span className="relative inline-block min-w-[45px] text-right text-lg font-semibold">*/}
-        {/*    {Math.floor(props.priceHigh)}*/}
-        {/*  </span>*/}
-        {/*)}*/}
-
-        {/*{typeof props.priceHigh !== "undefined" && typeof props.priceLow !== "undefined" && (*/}
-        {/*  <span className="text-tiny font-light text-gray-500">*/}
-        {/*    {Math.floor(props.priceLow)}-{Math.floor(props.priceHigh)}*/}
-        {/*  </span>*/}
-        {/*)}*/}
-
-        {/*<div className="relative h-1 flex-1 rounded-full bg-black/5">*/}
-        {/*  <figure className="absolute top-0 left-0 h-full w-[40px] rounded-full bg-red-300"></figure>*/}
-        {/*</div>*/}
       </div>
 
-      {/*<div className="flex items-center justify-end">*/}
-      {/*{props.additionalInfo}*/}
-      {/*<div>*/}
-      {/*  <ChevronRightIcon className="ml-3 h-5 w-5 text-gray-400" />*/}
-      {/*</div>*/}
-      {/*</div>*/}
       <DetailedViewModal open={viewDetails} setOpen={setViewDetails}>
         <div>
           <Dialog.Title as="h3" className="font-bold leading-6">
@@ -521,9 +274,7 @@ const DetailedViewModal: FC<
 export const BadgeCheap: FC<{}> = () => {
   return (
     <span className="flex items-center rounded-full bg-green-100  text-xs font-medium text-green-800">
-      {/*<CurrencyDollarIcon className="h-5 w-5 text-green-500" />*/}
       <CurrencyEuroIcon className="h-5 w-5 text-green-500" />
-      {/*Low*/}
     </span>
   );
 };
@@ -531,9 +282,7 @@ export const BadgeCheap: FC<{}> = () => {
 export const BadgeExpensive: FC<{}> = () => {
   return (
     <span className="flex items-center rounded-full bg-red-100 text-xs font-medium text-red-800">
-      {/*<CurrencyDollarIcon className="h-5 w-5 text-red-500" />*/}
       <CurrencyEuroIcon className="h-5 w-5 text-red-500" />
-      {/*High*/}
     </span>
   );
 };

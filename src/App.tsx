@@ -1,28 +1,22 @@
 import React, { useEffect } from "react";
-import Client, { Environment, Local } from "./client";
+import Client, { Environment } from "./client";
 import Layout from "./components/Layout";
 import { useAppDispatch, useAppSelector } from "./lib/store";
-import { onCountryListResponse, onCountryResponse, setIsLoading } from "./lib/slice";
+import {
+  onCountryListResponse,
+  onCountryResponse,
+  setIsLoading,
+  setSelectedCountry,
+} from "./lib/slice";
 
 function App() {
-  const { selectedRegion, selectedCountry } = useAppSelector((state) => state.forecastSlice);
+  const { selectedRegion, selectedCountry, countryList } = useAppSelector(
+    (state) => state.forecastSlice
+  );
   const dispatch = useAppDispatch();
 
   const client = new Client(Environment("staging"));
   // const client = new Client(Local);
-
-  // useEffect(() => {
-  //   const func = async () => {
-  //     await fetch("https://api.db-ip.com/v2/free/self")
-  //       .then(async (response) => {
-  //         const { ipAddress } = await response.json();
-  //         const data = await client.forecast.GetPostalCodeFromIP({ ip: ipAddress });
-  //         setPostalCode(data.zip_code);
-  //       })
-  //       .then((data) => console.log(data));
-  //   };
-  //   func();
-  // }, []);
 
   useEffect(() => {
     const func = async () => {
@@ -31,32 +25,44 @@ function App() {
         dispatch(onCountryListResponse(response));
       } catch (err) {
         console.error(err);
+        setTimeout(() => {
+          func();
+        }, 2000);
       }
     };
     func();
   }, []);
 
   useEffect(() => {
-    if (selectedCountry && selectedRegion) {
-      const func = async () => {
-        dispatch(setIsLoading(true));
-        try {
-          const response = await client.csv.GetCountry(selectedCountry.name);
-          dispatch(onCountryResponse(response));
-        } catch (err) {
-          console.error(err);
-        }
-        dispatch(setIsLoading(false));
-      };
-      func();
-    }
-  }, [selectedCountry, selectedRegion]);
+    const getUserLocation = async () => {
+      try {
+        const response = await fetch("https://api.country.is");
+        const { country } = await response.json();
+        const ipCountry = countryList.find(({ isoCode }) => isoCode === country)!;
+        if (!ipCountry) throw new Error("Invalid country: " + country);
+        else dispatch(setSelectedCountry(ipCountry.isoCode));
+      } catch (err) {
+        console.error(err);
+        const fallbackCountry = countryList.find(({ isoCode }) => isoCode === "SE")!;
+        dispatch(setSelectedCountry(fallbackCountry.isoCode));
+      }
+    };
+    if (countryList.length) getUserLocation();
+  }, [countryList]);
 
-  // useEffect(() => {
-  //   if (forecasts && selectedZone) {
-  //     setZoneForecast(forecasts.zones.find((z) => z.zone === selectedZone));
-  //   }
-  // }, [forecasts, selectedZone]);
+  useEffect(() => {
+    const getCountry = async () => {
+      dispatch(setIsLoading(true));
+      try {
+        const response = await client.csv.GetCountry(selectedCountry!.name);
+        dispatch(onCountryResponse(response));
+      } catch (err) {
+        console.error(err);
+      }
+      dispatch(setIsLoading(false));
+    };
+    if (selectedCountry && selectedRegion) getCountry();
+  }, [selectedCountry, selectedRegion]);
 
   return <Layout>{/*<Footer />*/}</Layout>;
 }

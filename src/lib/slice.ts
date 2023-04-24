@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { csv } from "../client";
 import { compareAsc, parse, setHours } from "date-fns";
 
-type ForecastViewingMode = "table" | "graph";
+type ForecastViewingMode = "table" | "graph" | "summary";
 
 export interface HourValue {
   time: string;
@@ -48,11 +48,7 @@ const forecastSlice = createSlice({
         return 0;
       });
 
-      const selectedCountry = countryList.find((country) => country.isoCode === "SE")!;
-
       state.countryList = countryList;
-      state.selectedCountry = selectedCountry;
-      state.selectedRegion = selectedCountry.regions[0];
     },
     onCountryResponse: (state, action: PayloadAction<csv.GetCountryResponse>) => {
       const DATE_RESPONSE_FORMAT = "yyyyLLdd";
@@ -84,7 +80,6 @@ const forecastSlice = createSlice({
       const selectedCountry = state.countryList.find(
         (country) => country.isoCode === action.payload
       )!;
-      // console.log(current(selectedCountry));
       state.selectedCountry = selectedCountry;
       state.selectedRegion = selectedCountry.regions[0];
     },

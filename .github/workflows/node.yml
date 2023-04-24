@@ -23,6 +23,8 @@ jobs:
           node-version: '16.15.1'
 
       - name: Install and Build 🔧
+        env:
+          VITE_SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         run: |
           npm install
           npm run build
