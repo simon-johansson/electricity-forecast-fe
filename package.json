@@ -28,6 +28,7 @@
     "react-sticky": "^6.0.3",
     "react-use": "^17.4.0",
     "recharts": "^2.4.1",
+    "redux-persist": "^6.0.0",
     "victory": "^36.6.8",
     "vite-plugin-sentry": "^1.2.0"
   },

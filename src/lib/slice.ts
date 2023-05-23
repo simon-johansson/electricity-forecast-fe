@@ -6,7 +6,7 @@ type ForecastViewingMode = "table" | "graph" | "summary";
 
 export interface HourValue {
   time: string;
-  price: number;
+  price: number | null;
 }
 
 export interface DayData {
@@ -16,6 +16,7 @@ export interface DayData {
 
 export interface RegionData {
   name: string;
+  currency: string;
   days: DayData[];
 }
 
@@ -57,23 +58,38 @@ const forecastSlice = createSlice({
       )!;
       const regionData: RegionData = {
         name: responseRegionData.name,
+        currency: responseRegionData.currency,
         days: [],
       };
-      responseRegionData.days.forEach((region) => {
-        const date = parse(region.date, DATE_RESPONSE_FORMAT, new Date()).toISOString();
+      responseRegionData.days.forEach((dayData, dayIndex) => {
+        const date = parse(dayData.date, DATE_RESPONSE_FORMAT, new Date()).toISOString();
+
+        const emptyHours: HourValue[] = [];
+        if (dayData.time.length !== 24) {
+          const offset = parseInt(dayData.time[0].offset);
+          for (let hour = 0; hour < offset; hour++) {
+            emptyHours.push({
+              time: setHours(new Date(date), hour).toISOString(),
+              price: null,
+            });
+          }
+        }
+        const series: HourValue[] = dayData.time.map((t) => {
+          return {
+            time: setHours(new Date(date), parseInt(t.localHour)).toISOString(),
+            price: parseFloat(t.localPrice),
+          };
+        });
+        series.unshift(...emptyHours);
         regionData.days.push({
           date: date,
-          series: region.time.map((t) => {
-            return {
-              time: setHours(new Date(date), parseInt(t.hour)).toISOString(),
-              price: parseFloat(t.price),
-            };
-          }),
+          series,
         });
       });
       regionData.days.sort((a, b) => {
         return compareAsc(Date.parse(a.date), Date.parse(b.date));
       });
+
       state.regionData = regionData;
     },
     setSelectedCountry: (state, action: PayloadAction<string>) => {
@@ -97,7 +113,6 @@ const forecastSlice = createSlice({
     },
   },
 });
-
 export const {
   setForecastViewingMode,
   setIsSearchingLocation,

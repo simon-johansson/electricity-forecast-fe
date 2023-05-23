@@ -32,8 +32,13 @@ export default function Footer() {
               advisor or conduct your own analysis before making any energy-related decisions based
               on this forecast.
             </p>
+            <br />
+            <p className="text-xs leading-5 text-slate-600">
+              All prices in the forecast exclude your local Energy-Tax, VAT, and any mark-ups from
+              your supplier.
+            </p>
           </div>
-          <div className="col-span-2 pt-6 sm:col-span-1 sm:pl-6">
+          <div className="col-span-2 pt-6 sm:col-span-1 sm:pl-6 sm:pt-0">
             <h3 className="mb-2 text-sm font-semibold leading-6">Privacy</h3>
             <p className=" text-xs leading-5 text-slate-600">
               At MyEnergyPrice.eu, we take data privacy seriously and are fully committed to GDPR

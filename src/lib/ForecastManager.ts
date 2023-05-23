@@ -10,6 +10,10 @@ export default class ForecastManager {
     this.days = regionData.days.map((day) => new DayForecast(day, this));
   }
 
+  get currency() {
+    return this.regionData.currency;
+  }
+
   get firstDay() {
     return this.days[0];
   }
@@ -60,8 +64,10 @@ export default class ForecastManager {
     let numHours = 0;
     this.days.forEach((day) => {
       day.hours.forEach((hour) => {
-        numHours++;
-        total += hour.price;
+        if (hour.price) {
+          total += hour.price;
+          numHours++;
+        }
       });
     });
     return total / numHours;
@@ -70,7 +76,8 @@ export default class ForecastManager {
   get hoursPriceHigh() {
     let high = this.days[0].hoursPriceHigh;
     this.days.forEach((day) => {
-      if (day.hoursPriceHigh.price > high.price) high = day.hoursPriceHigh;
+      const { price } = day.hoursPriceHigh;
+      if (!high.price || (price && price > high.price)) high = day.hoursPriceHigh;
     });
     return high;
   }
@@ -78,7 +85,8 @@ export default class ForecastManager {
   get hoursPriceLow() {
     let low = this.days[0].hoursPriceLow;
     this.days.forEach((day) => {
-      if (day.hoursPriceLow.price < low.price) low = day.hoursPriceLow;
+      const { price } = day.hoursPriceLow;
+      if (!low.price || (price && price < low.price)) low = day.hoursPriceLow;
     });
     return low;
   }
@@ -123,7 +131,7 @@ export class DayForecast {
   get hoursPriceHigh() {
     let high = this.hours[0];
     this.hours.forEach((val) => {
-      if (val.price > high.price) high = val;
+      if (!high.price || (val.price && val.price > high.price)) high = val;
     });
     return high;
   }
@@ -131,14 +139,14 @@ export class DayForecast {
   get hoursPriceLow() {
     let low = this.hours[0];
     this.hours.forEach((val) => {
-      if (val.price < low.price) low = val;
+      if (!low.price || (val.price && val.price < low.price)) low = val;
     });
     return low;
   }
 
   public compareHoursPrice(price: number) {
-    const low = this.forecastManager.hoursPriceLow.price;
-    const high = this.forecastManager.hoursPriceHigh.price;
+    const low = this.forecastManager.hoursPriceLow.price || 0;
+    const high = this.forecastManager.hoursPriceHigh.price || 0;
     return (price - low) / (high - low);
   }
 
@@ -186,14 +194,20 @@ export class TimeSpan {
 
   get averagePrice() {
     let total = 0;
-    this.hours.forEach((hour) => (total += hour.price));
-    return Math.floor(total / this.hours.length);
+    let hours = 0;
+    this.hours.forEach((hour) => {
+      if (hour.price) {
+        total += hour.price;
+        hours++;
+      }
+    });
+    return Number(total / hours);
   }
 
   get priceHigh() {
     let high = this.hours[0];
     this.hours.forEach((val) => {
-      if (val.price > high.price) high = val;
+      if (!high.price || (val.price && val.price > high.price)) high = val;
     });
     return high;
   }
@@ -201,7 +215,7 @@ export class TimeSpan {
   get priceLow() {
     let low = this.hours[0];
     this.hours.forEach((val) => {
-      if (val.price < low.price) low = val;
+      if (!low.price || (val.price && val.price < low.price)) low = val;
     });
     return low;
   }

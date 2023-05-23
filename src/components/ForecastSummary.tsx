@@ -31,8 +31,8 @@ const ForecastSummary: FC<{}> = () => {
       icon: ArrowsInLineVertical,
       value: (
         <p className="text-xl font-semibold text-gray-900">
-          {Math.round(forecastManager.hoursPriceAverage)}{" "}
-          <span className="text-sm font-normal">€/MWh</span>
+          {forecastManager.hoursPriceAverage.toFixed(2)}{" "}
+          <span className="text-sm font-normal">{regionData!.currency}</span>
         </p>
       ),
       details: `${forecastManager.firstDay.formattedDateShort} - ${forecastManager.lastDay.formattedDateShort}`,
@@ -42,8 +42,8 @@ const ForecastSummary: FC<{}> = () => {
       icon: Mountains,
       value: (
         <p className="text-xl font-semibold text-gray-900">
-          {Math.round(forecastManager.hoursPriceHigh.price)}{" "}
-          <span className="text-sm font-normal">€/MWh</span>
+          {forecastManager.hoursPriceHigh.price}{" "}
+          <span className="text-sm font-normal">{regionData!.currency}</span>
         </p>
       ),
       details: format(Date.parse(forecastManager.hoursPriceHigh.time), "cccc 'at' HH:mm"),
@@ -53,8 +53,8 @@ const ForecastSummary: FC<{}> = () => {
       icon: ChartLineDown,
       value: (
         <p className="text-xl font-semibold text-gray-900">
-          {Math.round(forecastManager.hoursPriceLow.price)}{" "}
-          <span className="text-sm font-normal">€/MWh</span>
+          {forecastManager.hoursPriceLow.price}{" "}
+          <span className="text-sm font-normal">{regionData!.currency}</span>
         </p>
       ),
       details: format(Date.parse(forecastManager.hoursPriceLow.time), "cccc 'at' HH:mm"),
@@ -77,7 +77,9 @@ const ForecastSummary: FC<{}> = () => {
           {/*<span className="ml-2 text-xs font-normal">(40 €/MWh)</span>*/}
         </p>
       ),
-      details: `${Math.round(forecastManager.lowestAverageTimeSpan.average)} €/MWh`,
+      details: `${forecastManager.lowestAverageTimeSpan.average.toFixed(2)} ${
+        regionData!.currency
+      }`,
     },
     {
       description: "Most expensive time on average",
@@ -89,7 +91,9 @@ const ForecastSummary: FC<{}> = () => {
           </span>
         </p>
       ),
-      details: `${Math.round(forecastManager.highestAverageTimeSpan.average)} €/MWh`,
+      details: `${forecastManager.highestAverageTimeSpan.average.toFixed(2)} ${
+        regionData!.currency
+      }`,
     },
   ];
 

@@ -25,7 +25,11 @@ const ForecastTable: FC<{}> = () => {
       <ul className="space-y-6">
         {forecastManager.days.map((dayForecast, index) => (
           <Fragment key={dayForecast.formattedDate}>
-            <DayTable key={dayForecast.formattedDate} dayForecast={dayForecast} />
+            <DayTable
+              key={dayForecast.formattedDate}
+              dayForecast={dayForecast}
+              currency={forecastManager.currency}
+            />
             <div className="flex h-20 md:hidden">
               <HorizontalBanner />
             </div>
@@ -38,7 +42,10 @@ const ForecastTable: FC<{}> = () => {
 
 export default ForecastTable;
 
-const DayTable: FC<{ dayForecast: DayForecast }> = ({ dayForecast }) => {
+const DayTable: FC<{ dayForecast: DayForecast; currency: string }> = ({
+  dayForecast,
+  currency,
+}) => {
   const [viewHourly, setViewHourly] = useState<boolean>(false);
   const elRef = useRef<HTMLLIElement>(null);
   const scrollUp = () => {
@@ -66,7 +73,7 @@ const DayTable: FC<{ dayForecast: DayForecast }> = ({ dayForecast }) => {
           {viewHourly
             ? dayForecast.hours.map((hourValue) => {
                 const priceComparedToMax = Math.round(
-                  dayForecast.compareHoursPrice(hourValue.price) * 100
+                  dayForecast.compareHoursPrice(hourValue.price ?? 0) * 100
                 );
                 let bgColor = "bg-green-300";
                 if (priceComparedToMax > 30) bgColor = "bg-slate-300";
@@ -84,20 +91,27 @@ const DayTable: FC<{ dayForecast: DayForecast }> = ({ dayForecast }) => {
                   <TimeRow
                     key={hourValue.time}
                     time={format(Date.parse(hourValue.time), "HH")}
+                    currency={currency}
                     price={hourValue.price}
-                    additionalInfo={additionalInfo}
+                    additionalInfo={hourValue.price !== null ? additionalInfo : undefined}
                   />
                 );
               })
             : dayForecast.timeSpans.map((timeSpan) => {
                 const lowPriceComparedToMax = Math.round(
-                  dayForecast.compareHoursPrice(timeSpan.priceLow.price) * 100
+                  dayForecast.compareHoursPrice(timeSpan.priceLow.price ?? 0) * 100
                 );
                 const highPriceComparedToMax = Math.round(
-                  dayForecast.compareHoursPrice(timeSpan.priceHigh.price) * 100
+                  dayForecast.compareHoursPrice(timeSpan.priceHigh.price ?? 0) * 100
                 );
-                const lowPriceLen = Math.round(timeSpan.priceLow.price).toString().length;
-                // const highPriceLen = Math.round(timeSpan.priceHigh.price).toString().length;
+                const lowPriceLen = Math.round(timeSpan.priceLow.price ?? 0).toString().length;
+
+                const priceLow = timeSpan.priceLow.price
+                  ? timeSpan.priceLow.price.toFixed(2)
+                  : null;
+                const priceHigh = timeSpan.priceHigh.price
+                  ? timeSpan.priceHigh.price.toFixed(2)
+                  : null;
 
                 const additionalInfo = (
                   <div className="relative h-1 flex-1 rounded-full bg-black/10">
@@ -117,9 +131,8 @@ const DayTable: FC<{ dayForecast: DayForecast }> = ({ dayForecast }) => {
                         right: `${Math.max(100 - highPriceComparedToMax, 2)}%`,
                       }}
                     >
-                      <span className="mr-2">{Math.round(timeSpan.priceLow.price)}</span>
-                      {/*{highPriceComparedToMax - lowPriceComparedToMax < 25 && "-"}*/}
-                      <span>{Math.round(timeSpan.priceHigh.price)}</span>
+                      <span className="mr-2">{priceLow !== null && priceLow}</span>
+                      <span>{priceHigh !== null && priceHigh !== priceLow && priceHigh}</span>
                     </div>
                   </div>
                 );
@@ -129,9 +142,14 @@ const DayTable: FC<{ dayForecast: DayForecast }> = ({ dayForecast }) => {
                     key={timeSpan.formattedTime}
                     time={timeSpan.formattedTime}
                     price={timeSpan.averagePrice}
+                    currency={currency}
                     priceHigh={timeSpan.priceHigh.price}
                     priceLow={timeSpan.priceLow.price}
-                    additionalInfo={additionalInfo}
+                    additionalInfo={
+                      timeSpan.priceHigh.price && timeSpan.priceLow.price
+                        ? additionalInfo
+                        : undefined
+                    }
                   />
                 );
               })}
@@ -151,9 +169,10 @@ const DayTable: FC<{ dayForecast: DayForecast }> = ({ dayForecast }) => {
 
 const TimeRow: FC<{
   time: string;
-  price: number;
-  priceHigh?: number;
-  priceLow?: number;
+  price: number | null;
+  currency: string;
+  priceHigh?: number | null;
+  priceLow?: number | null;
   hideBottomBorder?: boolean;
   textColor?: string;
   additionalInfo?: JSX.Element;
@@ -167,18 +186,24 @@ const TimeRow: FC<{
         props.hideBottomBorder ? "" : "border-b border-gray-200"
       }`}
     >
-      <div className="flex w-[27%] max-w-[100px] items-center">
+      <div className="flex w-[20%] max-w-[100px] items-center">
         <span className="w-12 text-center text-sm">{props.time}</span>
       </div>
 
       <div
-        className={`relative col-span-3 flex flex-1 items-center  ${
+        className={`relative col-span-3 flex flex-1 items-baseline  ${
           props.textColor ? props.textColor : "text-gray-900"
         }`}
       >
         <span className="relative inline-block min-w-[90px] text-lg font-semibold">
-          {Math.floor(props.price)}
-          <span className="col-span-3 ml-1 text-tiny font-light">€/MWh</span>
+          {props.price !== null ? (
+            <>
+              {props.price.toFixed(2)}
+              <span className="col-span-3 ml-1 mr-2 text-tiny font-light">{props.currency}</span>
+            </>
+          ) : (
+            "-"
+          )}
         </span>
 
         {props.additionalInfo}

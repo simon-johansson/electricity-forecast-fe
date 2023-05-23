@@ -170,6 +170,18 @@ const Layout: FC<PropsWithChildren> = (props) => {
                       analyzing the underlying factors that affect supply and demand. These factors
                       can include weather patterns, economic trends, fuel prices, generation
                       capacity, and transmission constraints.
+                      <br />
+                      <br />
+                      The forecast model was created by Klas-Göran Flysjö who is an esteemed
+                      professional in the energy sector, with a wealth of experience and expertise
+                      in electrical engineering and energy technology. His extensive knowledge of
+                      the industry has made him a sought-after authority in power trading, energy
+                      forecasting, and more. In addition to his work as a control room technician
+                      and operating engineer at nuclear and hydropower plants, Flysjö has held
+                      managerial positions at several power trading companies. As a recognized
+                      leader in the field, Klas-Göran Flysjö is a credible source of data and
+                      insights for anyone looking to understand the complex world of energy and
+                      power trading.
                     </p>
                   </li>
                 </ul>

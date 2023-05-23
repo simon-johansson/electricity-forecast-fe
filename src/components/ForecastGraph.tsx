@@ -15,28 +15,6 @@ import { DayData } from "../lib/slice";
 import { BadgeCheap, BadgeExpensive } from "./ForecastTable";
 import { useWindowSize } from "react-use";
 
-const getTimeSeries = (date: number) => {
-  const series: { x: Date; y: number }[] = [];
-  for (let hour = 0; hour <= 23; hour++) {
-    series.push({ x: new Date(2023, 3, date, hour), y: getRandomInt(100, 500) });
-  }
-  return series;
-};
-
-function getRandomInt(min: number, max: number) {
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-const TIME_SERIES = [
-  ...getTimeSeries(6),
-  ...getTimeSeries(7),
-  ...getTimeSeries(8),
-  ...getTimeSeries(9),
-  ...getTimeSeries(10),
-];
-
 const ForecastGraph: FC<{}> = () => {
   const { regionData } = useAppSelector((state) => state.forecastSlice);
   const [day, setDay] = useState<DayData>(regionData!.days[0]);
@@ -53,8 +31,6 @@ const ForecastGraph: FC<{}> = () => {
         <defs>
           <linearGradient id="areaGradient" x2="0%" y2="100%">
             <stop offset="30%" stopColor="#4f46e5" stopOpacity={0.1} />
-            {/*<stop offset="30%" stopColor="transparent" stopOpacity={0} />*/}
-            {/*<stop offset="90%" stopColor="white" stopOpacity={0} />*/}
             <stop offset="100%" stopColor="white" stopOpacity={0} />
           </linearGradient>
 
@@ -74,7 +50,7 @@ const ForecastGraph: FC<{}> = () => {
       </div>
 
       <div className="m-auto flex select-none">
-        <DayChart days={regionData!.days} selectedDay={day} />
+        <DayChart days={regionData!.days} selectedDay={day} currency={regionData.currency} />
       </div>
     </div>
   );
@@ -85,11 +61,9 @@ export default ForecastGraph;
 const DayChart: FC<{
   days: DayData[];
   selectedDay: DayData;
-}> = ({ days, selectedDay }) => {
-  const { width } = useWindowSize();
-  // console.log(width);
+  currency: string;
+}> = ({ days, selectedDay, currency }) => {
   const [isTouching, setIsTouching] = useState<boolean>(false);
-  const [hoverData, setHoverData] = useState<{ price?: number; time?: number }>({});
   const [boundingRect, setBoundingRect] = useState({ width: 0, height: 0 });
   const graphRef = useCallback((node: Element) => {
     if (node !== null) {
@@ -98,50 +72,42 @@ const DayChart: FC<{
   }, []);
 
   const [domainYMin, domainYMax] = useMemo(() => {
-    let min: undefined | number;
-    let max: undefined | number;
+    let min = 10000;
+    let max = 0;
     days.forEach((day) => {
       day.series.forEach(({ price }) => {
-        if (!min || price < min) min = price;
-        if (!max || price > max) max = price;
+        if (price && price < min) min = price;
+        if (price && price > max) max = price;
       });
     });
     return [min!, max!];
   }, [days]);
 
   const [dayMin, dayMax, dayAverage] = useMemo(() => {
-    let min: undefined | number;
-    let max: undefined | number;
+    let min = 10000;
+    let max = 0;
     let average = 0;
+    let len = 0;
     selectedDay.series.forEach(({ price }) => {
-      if (min === undefined || price < min) min = price;
-      if (max === undefined || price > max) max = price;
-      average += price;
+      if (price && price < min) min = price;
+      if (price && price > max) max = price;
+      if (price) {
+        average += price;
+        len++;
+      }
     });
-    return [min!, max!, average / selectedDay.series.length];
+    return [min!, max!, average / len];
   }, [selectedDay]);
 
   const timeSeries = useMemo(() => {
     return selectedDay.series.map((val) => ({ x: Date.parse(val.time), y: val.price }));
   }, [selectedDay]);
 
-  // console.log(boundingRect.width);
-
   // @ts-ignore
   return (
     // @ts-ignore
     <div className="w-full" style={{ width: "100%", height: "100%" }} ref={graphRef}>
-      <div className="mt-10 border-t border-black/10 pt-4">
-        {/*<div className={hoverData.price ? "invisible" : "visible"}>*/}
-        {/*  <p>*/}
-        {/*    <span className="mr-1 text-lg font-bold">{hoverData.price ? hoverData.price : 52}</span>*/}
-        {/*    <span className="text-sm">€/MWh</span>*/}
-        {/*  </p>*/}
-        {/*  <p className="text-xs">*/}
-        {/*    H: {Math.round(dayMax)} L: {Math.round(dayMin)}*/}
-        {/*  </p>*/}
-        {/*</div>*/}
-      </div>
+      <div className="mt-6 border-t border-black/10 pt-4 pb-2" />
 
       <div
         onTouchMove={() => setIsTouching(true)}
@@ -150,7 +116,7 @@ const DayChart: FC<{
         onMouseOut={() => setIsTouching(false)}
       >
         <VictoryChart
-          padding={{ left: 30, top: 60, right: 10, bottom: 35 }}
+          padding={{ left: 35, top: 60, right: 10, bottom: 35 }}
           height={300}
           theme={{
             axis: {
@@ -172,115 +138,45 @@ const DayChart: FC<{
             },
           }}
           width={boundingRect.width}
-          // height={width > 1000 ? 200 : 300}
-          domain={{ y: [domainYMin - 10, domainYMax + 10] }}
-          // domainPadding={{ y: 10 }}
+          domain={{ y: [domainYMin - domainYMax * 0.05, domainYMax + domainYMax * 0.05] }}
           scale={{ x: "time", y: "linear" }}
           containerComponent={
-            // <VictoryCursorContainer
-            //   cursorLabelComponent={<VictoryLabel y={50} dx={0} />}
-            //   cursorLabel={({ datum }) => {
-            //     console.log(datum.x);
-            //     return `${Math.round(datum.y)}`;
-            //   }}
-            // />
             <VictoryVoronoiContainer
-              // onActivated={() => console.log("active")}
-              // onDeactivated={() => console.log("deactive")}
               voronoiDimension="x"
-              // onActivated={() => console.log("onActivated")}
-              // onDeactivated={() => console.log("onDeactivated")}
               voronoiBlacklist={["areaBackground", "dayBars", "priceLine"]}
               labels={(data) => {
-                // console.log(data);
                 const { datum } = data;
-                // if (hoverData.time !== datum.x) {
-                //   setHoverData({
-                //     price: datum.y,
-                //     time: datum.x,
-                //   });
-                // }
-                // return datum.y;
                 if (isTouching) return datum.y;
                 else return null;
               }}
-              // labelComponent={<VictoryLabel y={50} x={0} />}
               labelComponent={
                 // @ts-ignore
-                <CustomLine dayMax={dayMax} dayMin={dayMin} />
+                <CustomLine dayMax={dayMax} dayMin={dayMin} currency={currency} />
               }
-              // labelComponent={
-              //   <VictoryTooltip dy={-7} constrainToVisibleArea cornerRadius={0} pointerLength={5} />
-              // }
             />
           }
-          // theme={{ ...VictoryTheme.material, axis: { style: { grid: { stroke: "red" } } } }}
-          // style={{ background: { stroke: "red" }, parent: { stroke: "black" } }}
-          // containerComponent={
-          //   <VictoryZoomContainer
-          //     allowZoom={false}
-          //     zoomDomain={{ x: [TIME_SERIES[0].x, TIME_SERIES[23].x] }}
-          //   />
-          // }
-          // containerComponent={<VictoryContainer preserveAspectRatio="none" />}
         >
-          {/*<foreignObject x={20} y={10} width="80" height="40">*/}
-          {/*  <div className="w-full text-center">*/}
-          {/*    <span className="block text-xs">time</span>*/}
-          {/*    <span className="mr-1 text-lg font-semibold">52</span>*/}
-          {/*    <span className="text-xs">€/MWh</span>*/}
-          {/*  </div>*/}
-          {/*</foreignObject>*/}
-
-          {/*<VictoryBar*/}
-          {/*  labels={() => "average"}*/}
-          {/*  style={{ data: { fill: "transparent" } }}*/}
-          {/*  labelComponent={<CustomLine />}*/}
-          {/*  data={timeSeries}*/}
-          {/*/>*/}
-
           <MyCustomLabel
             hide={isTouching}
             dayMax={dayMax}
             dayMin={dayMin}
             dayAverage={dayAverage}
+            currency={currency}
           />
 
-          {/*<VictoryLabel*/}
-          {/*  text={"add labels"}*/}
-          {/*  textComponent={*/}
-          {/*    <foreignObject x={10} y={-7} width="80" height="50">*/}
-          {/*      <div className="left w-full">*/}
-          {/*        <span className="mr-1 text-lg font-semibold">87</span>*/}
-          {/*        <span className="text-xs">€/MWh</span>*/}
-          {/*        <span className="block text-xs">H:40 L:10</span>*/}
-          {/*      </div>*/}
-          {/*    </foreignObject>*/}
-          {/*  }*/}
-          {/*  x={0}*/}
-          {/*  y={0}*/}
-          {/*/>*/}
-
-          {/*<WrapperComponent>*/}
           <VictoryAxis
             dependentAxis
             axisComponent={<LineSegment style={{ opacity: 0.1 }} />}
             tickLabelComponent={<VictoryLabel dy={0} dx={5} />}
-            // style={{ ticks: { stroke: "red", size: 20 } }}
           />
-          {/*</WrapperComponent>*/}
 
           <VictoryAxis
             axisComponent={<LineSegment style={{ opacity: 0.1 }} />}
             offsetY={35}
-            // padding={{ left: 50 }}
-            // scale={{ x: "time" }}
-            // tickFormat={(t) => `${Math.round(t)}k`}
             tickFormat={(t: Date) => {
               return format(t, "HH:mm");
             }}
             tickCount={boundingRect.width < 500 ? 4 : 6}
-            // tickValues={[2, 3, 4, 5]}
           />
 
           <VictoryArea
@@ -300,47 +196,11 @@ const DayChart: FC<{
             style={{
               data: { stroke: "#4f46e5", opacity: 0.6, strokeWidth: 4 },
             }}
-            // labels={({ datum }) => datum.y}
-            // labels={({ datum }) => {
-            //   if (datum.y === dayMax) return "high";
-            //   if (datum.y === dayMin) return "low";
-            //   return "";
-            // }}
-            // labelComponent={<VictoryLabel />}
-            // labelComponent={
-            //   // <VictoryLabel
-            //   //   style={{
-            //   //     fontSize: "40px",
-            //   //     lineHeight: 0,
-            //   //     fill: "black",
-            //   //     stroke: "#f3f4f6",
-            //   //     strokeWidth: 4,
-            //   //   }}
-            //   //   dy={18}
-            //   //   dx={(args) => {
-            //   //     if (!args.text[0]) return -1000;
-            //   //     return 0;
-            //   //   }}
-            //   // />
-            //   <CustomLabel />
-            // }
             data={timeSeries}
-            // events={[
-            //   {
-            //     target: "data",
-            //     eventHandlers: {
-            //       onMouseOver: (event, props) => {
-            //         console.log(event);
-            //         console.log(props);
-            //       },
-            //     },
-            //   },
-            // ]}
           />
 
           <VictoryLine
             interpolation="catmullRom"
-            // animate={{ duration: 500, onLoad: { duration: 0 } }}
             style={{
               data: { stroke: "transparent", opacity: 0, strokeWidth: 4 },
             }}
@@ -352,195 +212,9 @@ const DayChart: FC<{
             labelComponent={<CustomLabel />}
             data={timeSeries}
           />
-
-          {/*<VictoryBar*/}
-          {/*  name="dayBars"*/}
-          {/*  style={{*/}
-          {/*    data: {*/}
-          {/*      fill: "transparent",*/}
-          {/*      width: 18,*/}
-          {/*      // strokeWidth: 2,*/}
-          {/*    },*/}
-          {/*  }}*/}
-          {/*  data={timeSeries.map((val) => ({ ...val, y: domainYMax + 5, label: "" }))}*/}
-          {/*  labelComponent={<VictoryLabel y={50} dx={0} />}*/}
-          {/*  events={[*/}
-          {/*    {*/}
-          {/*      target: "data",*/}
-          {/*      eventHandlers: {*/}
-          {/*        // onMouseEnter: (event, props) => {*/}
-          {/*        //   console.log(props.index);*/}
-          {/*        //   return [*/}
-          {/*        //     {*/}
-          {/*        //       target: "labels",*/}
-          {/*        //       mutation: (props) => {*/}
-          {/*        //         return { text: `${timeSeries[props.index].y}€` };*/}
-          {/*        //       },*/}
-          {/*        //     },*/}
-          {/*        //     {*/}
-          {/*        //       target: "data",*/}
-          {/*        //       mutation: (props) => {*/}
-          {/*        //         // return { style: { fill: "#4f46e5", opacity: 0.2, width: 18 } };*/}
-          {/*        //         return {*/}
-          {/*        //           style: {*/}
-          {/*        //             fill: "url(#lineGradient)",*/}
-          {/*        //             width: 18,*/}
-          {/*        //           },*/}
-          {/*        //         };*/}
-          {/*        //       },*/}
-          {/*        //     },*/}
-          {/*        //   ];*/}
-          {/*        // },*/}
-          {/*        // onTouchMove: (event, props) => {*/}
-          {/*        //   (document.activeElement as any).blur();*/}
-          {/*        //   console.log(props.index);*/}
-          {/*        //   return [*/}
-          {/*        //     {*/}
-          {/*        //       target: "labels",*/}
-          {/*        //       mutation: (props) => {*/}
-          {/*        //         return { text: `${timeSeries[props.index].y}€` };*/}
-          {/*        //       },*/}
-          {/*        //     },*/}
-          {/*        //     {*/}
-          {/*        //       target: "data",*/}
-          {/*        //       mutation: (props) => {*/}
-          {/*        //         // return { style: { fill: "#4f46e5", opacity: 0.2, width: 18 } };*/}
-          {/*        //         return {*/}
-          {/*        //           style: {*/}
-          {/*        //             fill: "url(#lineGradient)",*/}
-          {/*        //             width: 18,*/}
-          {/*        //           },*/}
-          {/*        //         };*/}
-          {/*        //       },*/}
-          {/*        //     },*/}
-          {/*        //   ];*/}
-          {/*        // },*/}
-          {/*        // onMouseOut: (event, props) => {*/}
-          {/*        //   // console.log(props.index);*/}
-          {/*        //   return [*/}
-          {/*        //     {*/}
-          {/*        //       target: "labels",*/}
-          {/*        //       mutation: (props) => {*/}
-          {/*        //         return { text: "" };*/}
-          {/*        //       },*/}
-          {/*        //     },*/}
-          {/*        //     {*/}
-          {/*        //       target: "data",*/}
-          {/*        //       mutation: (props) => {*/}
-          {/*        //         return { style: { fill: "transparent", width: 18 } };*/}
-          {/*        //       },*/}
-          {/*        //     },*/}
-          {/*        //   ];*/}
-          {/*        // },*/}
-          {/*      },*/}
-          {/*    },*/}
-          {/*  ]}*/}
-          {/*/>*/}
         </VictoryChart>
       </div>
     </div>
-  );
-};
-
-const ScrollableChart: FC = () => {
-  return (
-    <VictoryChart
-      padding={{ left: 35, top: 10, right: 10, bottom: 35 }}
-      height={450}
-      domain={{ y: [0, 600] }}
-      // scale={{ x: "time" }}
-      // theme={{ ...VictoryTheme.material, axis: { style: { grid: { stroke: "red" } } } }}
-      // style={{ background: { stroke: "red" }, parent: { stroke: "black" } }}
-      containerComponent={
-        <VictoryZoomContainer
-          allowZoom={false}
-          zoomDomain={{ x: [TIME_SERIES[0].x, TIME_SERIES[23].x] }}
-        />
-      }
-    >
-      {/* Vertical bar indicating new day */}
-      {TIME_SERIES.map((dataPoint, index) => {
-        if (getHours(dataPoint.x) == 0) {
-          return (
-            // <VictoryBar
-            //   style={{
-            //     data: {
-            //       fill: "transparent",
-            //       width: 1,
-            //       stroke: "#111111",
-            //       strokeWidth: 2,
-            //       strokeDasharray: 20,
-            //       strokeDashoffset: 11,
-            //       strokeOpacity: 0.2,
-            //     },
-            //   }}
-            //   data={[{ x: dataPoint.x, y: 1000 }]}
-            // />
-
-            // <VictoryAxis
-            //   // label="Label"
-            //   style={
-            //     {
-            //       // axis: { stroke: "#756f6a" },
-            //       // axisLabel: { fontSize: 20, padding: 30 },
-            //       // grid: { stroke: ({ tick }: any) => (tick > 0.5 ? "red" : "grey") },
-            //       // ticks: { stroke: "grey", size: 5 },
-            //       // tickLabels: { fontSize: 15, padding: 5 },
-            //     }
-            //   }
-            // />
-
-            <VictoryLine
-              style={{
-                data: {
-                  width: 1,
-                  stroke: "tomato",
-                  strokeWidth: 2,
-                  strokeDasharray: 15,
-                  strokeDashoffset: 11,
-                  // strokeOpacity: 0.7,
-                },
-              }}
-              // labels={({ datum }) => {
-              //   if (datum.y > 500) return "💵";
-              //   if (datum.y < 130) return "😊";
-              //   return "";
-              // }}
-              // labelComponent={<VictoryLabel dy={-20} dx={10} />}
-              data={[
-                { x: dataPoint.x, y: 0 },
-                { x: dataPoint.x, y: 1000 },
-              ]}
-            />
-          );
-        }
-        return null;
-      })}
-
-      <VictoryArea
-        interpolation="natural"
-        style={{
-          data: { fill: "url(#areaGradient)" },
-        }}
-        data={TIME_SERIES}
-      />
-
-      <VictoryLine
-        interpolation="natural"
-        style={{
-          data: { stroke: "#4f46e5", strokeWidth: 2 },
-        }}
-        // labels={({ datum }) => datum.y}
-        // labels={({ datum }) => {
-        //   if (datum.y > 500) return "💵";
-        //   if (datum.y < 130) return "😊";
-        //   return "";
-        // }}
-        // labelComponent={<VictoryLabel />}
-        // labelComponent={<VictoryLabel dy={-20} dx={10} />}
-        data={TIME_SERIES}
-      />
-    </VictoryChart>
   );
 };
 
@@ -610,23 +284,17 @@ const CustomLabel: FC = (props: any) => {
       {el}
     </foreignObject>
   );
-  // return (
-  //   <text x={props.x} y={props.y} fill={"#ef4444"}>
-  //     test
-  //   </text>
-  // );
-  // return <circle cx={props.x} cy={props.y} r={10} fill={"#ef4444"} />;
-  // return <circle cx={props.x} cy={props.y} r={8} fill={"#22c55e"} />;
 };
 
 const MyCustomLabel = (props: any) => {
   return (
-    <foreignObject x={10} y={-7} width="80" height="50">
+    <foreignObject x={10} y={-7} width="100" height="50">
       <div className={`left w-full ${props.hide ? "hidden" : ""}`}>
-        <span className="mr-1 text-lg font-semibold">{Math.round(props.dayAverage)}</span>
-        <span className="text-xs">€/MWh</span>
+        <span className="mr-1 text-lg font-semibold">{props.dayAverage.toFixed(2)}</span>
+        <span className="text-xs">{props.currency}</span>
         <span className="block text-xs">
-          H:{Math.round(props.dayMax)} L:{Math.round(props.dayMin)}
+          <span className="mr-2">H:{props.dayMax.toFixed(2)}</span>
+          <span>L:{props.dayMin.toFixed(2)}</span>
         </span>
       </div>
     </foreignObject>
@@ -634,23 +302,9 @@ const MyCustomLabel = (props: any) => {
 };
 
 const CustomLine: FC = (props: any) => {
-  // return (
-  //   <>
-  //     <foreignObject x={props.x - 40} y={-30} width="80" height="40">
-  //       <div>
-  //         <p>
-  //           <span className="mr-1 text-lg font-bold">52</span>
-  //           <span className="text-sm">€/MWh</span>
-  //         </p>
-  //         <p className="text-xs">H: 10 L: 100</p>
-  //       </div>
-  //     </foreignObject>
-  //   </>
-  // );
-
   if (props.text[0] === null) return null;
 
-  const price = Math.round(props.text[0]);
+  const price = props.text[0];
   const time = format(props.datum.x, "HH:mm");
   const isMax = props.datum.y === props.dayMax;
   const isMin = props.datum.y === props.dayMin;
@@ -661,12 +315,11 @@ const CustomLine: FC = (props: any) => {
   })();
   return (
     <>
-      {/*<VictoryTooltip dy={-7} constrainToVisibleArea cornerRadius={0} pointerLength={5} />*/}
-      <foreignObject x={props.x - 40} y={10} width="80" height="40">
+      <foreignObject x={props.x - 40} y={10} width="100" height="40">
         <div className="w-full text-center">
           <span className="block text-xs">{time}</span>
-          <span className="mr-1 text-lg font-semibold">{price}</span>
-          <span className="text-xs">€/MWh</span>
+          <span className="mr-1 text-lg font-semibold">{parseFloat(price).toFixed(2)}</span>
+          <span className="text-xs">{props.currency}</span>
         </div>
       </foreignObject>
       <line
@@ -690,51 +343,3 @@ const CustomLine: FC = (props: any) => {
     </>
   );
 };
-
-const ContainerWrapper: FC<any> = (props) => {
-  console.log(props);
-  return (
-    <VictoryVoronoiContainer
-      voronoiDimension="x"
-      voronoiBlacklist={["areaBackground", "dayBars", "priceLine"]}
-      labels={(data) => {
-        const { datum } = data;
-        // if (hoverData.time !== datum.x) {
-        //   setHoverData({
-        //     price: datum.y,
-        //     time: datum.x,
-        //   });
-        // }
-        return datum.y;
-      }}
-      // labelComponent={<VictoryLabel y={50} x={0} />}
-      // @ts-ignore
-      labelComponent={<CustomLine dayMax={100} dayMin={0} />}
-      // labelComponent={
-      //   <VictoryTooltip dy={-7} constrainToVisibleArea cornerRadius={0} pointerLength={5} />
-      // }
-    />
-  );
-};
-
-class WrapperComponent extends React.Component {
-  renderChildren() {
-    // @ts-ignore
-    const children = React.Children.toArray(this.props.children);
-    return children.map((child) => {
-      // @ts-ignore
-      const style = { ...child.props.style, ...this.props.style };
-      // @ts-ignore
-      return React.cloneElement(child, Object.assign({}, child.props, this.props, { style }));
-    });
-  }
-
-  render() {
-    return (
-      <g>
-        <VictoryLabel text={"add labels"} x={110} y={30} />
-        {this.renderChildren()}
-      </g>
-    );
-  }
-}

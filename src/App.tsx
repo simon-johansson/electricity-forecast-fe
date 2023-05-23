@@ -1,13 +1,15 @@
 import React, { useEffect } from "react";
-import Client, { Environment } from "./client";
-import Layout from "./components/Layout";
-import { useAppDispatch, useAppSelector } from "./lib/store";
+import Client, { Environment, Local } from "./client";
+import { persistor, useAppDispatch, useAppSelector } from "./lib/store";
 import {
   onCountryListResponse,
   onCountryResponse,
   setIsLoading,
   setSelectedCountry,
 } from "./lib/slice";
+import { PersistGate } from "redux-persist/integration/react";
+import Layout from "./components/Layout";
+import { captureException } from "@sentry/react";
 
 function App() {
   const { selectedRegion, selectedCountry, countryList } = useAppSelector(
@@ -24,16 +26,18 @@ function App() {
         const response = await client.csv.GetCountryList();
         dispatch(onCountryListResponse(response));
       } catch (err) {
-        console.error(err);
-        setTimeout(() => {
-          func();
-        }, 2000);
+        captureException(err);
+        setTimeout(func, 2000);
       }
     };
     func();
   }, []);
 
   useEffect(() => {
+    const setFallbackCountry = () => {
+      const fallbackCountry = countryList.find(({ isoCode }) => isoCode === "SE")!;
+      dispatch(setSelectedCountry(fallbackCountry.isoCode));
+    };
     const getUserLocation = async () => {
       try {
         const response = await fetch("https://api.country.is");
@@ -42,12 +46,19 @@ function App() {
         if (!ipCountry) throw new Error("Invalid country: " + country);
         else dispatch(setSelectedCountry(ipCountry.isoCode));
       } catch (err) {
-        console.error(err);
-        const fallbackCountry = countryList.find(({ isoCode }) => isoCode === "SE")!;
-        dispatch(setSelectedCountry(fallbackCountry.isoCode));
+        captureException(err);
+        setFallbackCountry();
       }
     };
-    if (countryList.length) getUserLocation();
+    if (countryList.length) {
+      if (!selectedCountry) getUserLocation();
+      else {
+        const country = countryList.find(({ isoCode }) => isoCode === selectedCountry.isoCode);
+        const countryIsAvailable =
+          country && country.regions.find((region) => region === selectedRegion);
+        if (!countryIsAvailable) setFallbackCountry();
+      }
+    }
   }, [countryList]);
 
   useEffect(() => {
@@ -58,13 +69,19 @@ function App() {
         dispatch(onCountryResponse(response));
       } catch (err) {
         console.error(err);
+        captureException(err);
+        setTimeout(getCountry, 2000);
       }
       dispatch(setIsLoading(false));
     };
-    if (selectedCountry && selectedRegion) getCountry();
-  }, [selectedCountry, selectedRegion]);
+    if (selectedCountry && selectedRegion && countryList.length) getCountry();
+  }, [selectedCountry, selectedRegion, countryList]);
 
-  return <Layout>{/*<Footer />*/}</Layout>;
+  return (
+    <PersistGate loading={null} persistor={persistor}>
+      <Layout />
+    </PersistGate>
+  );
 }
 
 export default App;
