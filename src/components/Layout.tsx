@@ -69,7 +69,7 @@ const Layout: FC<PropsWithChildren> = (props) => {
           <SearchArea open={isSearchingLocation} />
 
           <div className="bg-gray-100 py-5 pb-0">
-            <main className="mx-auto px-4 sm:px-6">
+            <main className="mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex items-center justify-center pb-5">
                 <span className="isolate flex rounded-md shadow-sm">
                   <button
@@ -136,7 +136,7 @@ const Layout: FC<PropsWithChildren> = (props) => {
                 </div>
                 <ul
                   role="list"
-                  className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-8 sm:mt-20 lg:max-w-none lg:grid-cols-3"
+                  className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-8 space-y-6 sm:mt-20 lg:max-w-none"
                 >
                   <li>
                     <h3 className="text-lg font-semibold leading-6 text-gray-900">

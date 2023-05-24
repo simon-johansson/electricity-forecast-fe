@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { csv } from "../client";
-import { compareAsc, parse, setHours } from "date-fns";
+import { add, compareAsc, isAfter, isTomorrow, parse, setHours, startOfToday } from "date-fns";
 
 type ForecastViewingMode = "table" | "graph" | "summary";
 
@@ -86,9 +86,17 @@ const forecastSlice = createSlice({
           series,
         });
       });
+
       regionData.days.sort((a, b) => {
         return compareAsc(Date.parse(a.date), Date.parse(b.date));
       });
+
+      // const firstDayIsTomorrow = isTomorrow(Date.parse(regionData.days[1].date));
+      // const isAfter10UTC = isAfter(Date.now(), add(startOfToday(), { hours: 10 }));
+      // // Remove tomorrows data if its after 10:00 UTC time because that when the "real" price info is published
+      // if (firstDayIsTomorrow && isAfter10UTC) {
+      //   regionData.days.splice(1, 1);
+      // }
 
       state.regionData = regionData;
     },

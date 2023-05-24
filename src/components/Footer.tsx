@@ -17,7 +17,7 @@ export default function Footer() {
       {/*    &copy; 2023 My Energy Price, Inc. All rights reserved.*/}
       {/*  </p>*/}
       {/*</div>*/}
-      <div className="mx-auto px-6 pb-8 pt-20">
+      <div className="mx-auto px-4 pb-8 pt-20 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 gap-7 divide-y sm:divide-x sm:divide-y-0">
           <div className="col-span-2 sm:col-span-1">
             <h3 className="mb-2 text-sm font-semibold leading-6">Disclaimer</h3>
