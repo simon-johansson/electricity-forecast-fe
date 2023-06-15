@@ -111,18 +111,18 @@ const ForecastSummary: FC<{}> = () => {
               description={item.description}
               details={item.details}
             />
-            {index === 0 && (
-              <div className="flex h-20 sm:hidden">
-                <HorizontalBanner />
-              </div>
-            )}
+            {/*{index === 0 && (*/}
+            {/*  <div className="flex h-20 sm:hidden">*/}
+            {/*    <HorizontalBanner />*/}
+            {/*  </div>*/}
+            {/*)}*/}
           </>
         ))}
       </dl>
 
-      <div className="mt-5 flex h-20 md:hidden">
-        <HorizontalBanner />
-      </div>
+      {/*<div className="mt-5 flex h-20 md:hidden">*/}
+      {/*  <HorizontalBanner />*/}
+      {/*</div>*/}
 
       <dl className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2">
         {summaryTimeItems.map((item) => (

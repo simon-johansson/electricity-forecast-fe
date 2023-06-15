@@ -18,7 +18,7 @@ const Layout: FC<PropsWithChildren> = (props) => {
 
   return (
     <div className="flex w-full">
-      <VerticalBanner />
+      {/*<VerticalBanner />*/}
       <div className="z-10 m-auto min-w-0 max-w-4xl md:min-w-[768px]">
         <div className="min-h-full">
           <nav className="border-b border-gray-200 bg-white">
@@ -192,7 +192,7 @@ const Layout: FC<PropsWithChildren> = (props) => {
           </div>
         </div>
       </div>
-      <VerticalBanner />
+      {/*<VerticalBanner />*/}
     </div>
   );
 };

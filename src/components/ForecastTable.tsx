@@ -30,9 +30,9 @@ const ForecastTable: FC<{}> = () => {
               dayForecast={dayForecast}
               currency={forecastManager.currency}
             />
-            <div className="flex h-20 md:hidden">
-              <HorizontalBanner />
-            </div>
+            {/*<div className="flex h-20 md:hidden">*/}
+            {/*  <HorizontalBanner />*/}
+            {/*</div>*/}
           </Fragment>
         ))}
       </ul>
