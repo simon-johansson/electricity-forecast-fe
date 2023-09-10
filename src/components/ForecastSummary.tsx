@@ -1,6 +1,5 @@
 import React, { FC, useMemo } from "react";
 import { useAppSelector } from "../lib/store";
-import { HorizontalBanner } from "./Layout";
 import {
   ArrowsInLineVertical,
   ChartLineDown,
@@ -145,7 +144,7 @@ const SummaryStat: FC<{ description: string; icon: Icon; value: JSX.Element; det
   props
 ) => {
   return (
-    <div className="relative flex items-center rounded-lg bg-white px-2 py-5 shadow">
+    <div className="relative flex items-center rounded-lg border border-black border-opacity-10 bg-white px-2 py-5 shadow-md">
       <div className="flex w-20 justify-center">
         <props.icon size={40} color="#6366f1" weight="duotone" />
       </div>

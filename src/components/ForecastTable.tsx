@@ -9,7 +9,6 @@ import { Dialog, Transition } from "@headlessui/react";
 import { Sticky, StickyContainer } from "react-sticky";
 import { useAppSelector } from "../lib/store";
 import { format } from "date-fns";
-import { HorizontalBanner } from "./Layout";
 import ForecastManager, { DayForecast } from "../lib/ForecastManager";
 
 const ForecastTable: FC<{}> = () => {
@@ -30,9 +29,6 @@ const ForecastTable: FC<{}> = () => {
               dayForecast={dayForecast}
               currency={forecastManager.currency}
             />
-            {/*<div className="flex h-20 md:hidden">*/}
-            {/*  <HorizontalBanner />*/}
-            {/*</div>*/}
           </Fragment>
         ))}
       </ul>
@@ -57,7 +53,10 @@ const DayTable: FC<{ dayForecast: DayForecast; currency: string }> = ({
   }, [dayForecast]);
 
   return (
-    <li className="overflow-hidden rounded-md bg-white px-4 py-1 shadow" ref={elRef}>
+    <li
+      className="overflow-hidden rounded-md border border-black border-opacity-10 bg-white px-4 py-1 shadow-md"
+      ref={elRef}
+    >
       <StickyContainer>
         <ul>
           <li className="relative py-3">

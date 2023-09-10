@@ -8,6 +8,9 @@ import ForecastGraph from "./ForecastGraph";
 import { CircleFlag } from "react-circle-flags";
 import Footer from "./Footer";
 import ForecastSummary from "./ForecastSummary";
+import Header from "./Header";
+
+// mx-auto min-w-0 max-w-4xl
 
 const Layout: FC<PropsWithChildren> = (props) => {
   const { selectedRegion, selectedCountry, isSearchingLocation, forecastViewingMode } =
@@ -16,61 +19,53 @@ const Layout: FC<PropsWithChildren> = (props) => {
 
   if (!selectedCountry || !selectedRegion) return null;
 
+  const searchBox = (
+    <div
+      onClick={() => dispatch(setIsSearchingLocation(true))}
+      // className="flex w-full max-w-[400px] cursor-pointer justify-between rounded border border-black/30 px-2 py-1 sm:w-fit sm:justify-start"
+      className="flex w-full cursor-pointer justify-between rounded border border-black/30 px-2 py-1"
+    >
+      <div className="flex">
+        <div className="flex flex-shrink-0 items-center">
+          <CircleFlag countryCode={selectedCountry.isoCode.toLowerCase()} className="h-5 w-5" />
+        </div>
+
+        <div className="flex">
+          <p className="ml-3 inline-flex items-center whitespace-nowrap text-gray-500">
+            <span className="font-bold capitalize">{selectedCountry.name.toLowerCase()}</span>
+            {selectedCountry.regions.length > 1 && <span className="ml-2">({selectedRegion})</span>}
+          </p>
+        </div>
+      </div>
+
+      <div className="ml-8 flex items-center">
+        <button
+          type="button"
+          className="rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+        >
+          <MagnifyingGlassIcon className="h-6 w-6" />
+        </button>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="flex w-full">
-      {/*<VerticalBanner />*/}
-      <div className="z-10 m-auto min-w-0 max-w-4xl md:min-w-[768px]">
-        <div className="min-h-full">
-          <nav className="border-b border-gray-200 bg-white">
-            <div className="grid grid-cols-2 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
-              <div className="col-span-2 sm:col-span-1">
-                <h1 className="mb-4 font-semibold leading-6 sm:mb-0">
-                  Energy Price Forecasts For Europe
-                </h1>
-              </div>
-              <div
-                className="col-span-2 flex justify-end sm:col-span-1"
-                onClick={() => dispatch(setIsSearchingLocation(true))}
-              >
-                <div className="flex w-full max-w-[400px] cursor-pointer justify-between rounded border border-black/30 px-2 py-1 sm:w-fit sm:justify-start">
-                  <div className="flex">
-                    <div className="flex flex-shrink-0 items-center">
-                      <CircleFlag
-                        countryCode={selectedCountry.isoCode.toLowerCase()}
-                        className="h-5 w-5"
-                      />
-                    </div>
-
-                    <div className="flex">
-                      <p className="ml-3 inline-flex items-center whitespace-nowrap text-gray-500">
-                        <span className="font-bold capitalize">
-                          {selectedCountry.name.toLowerCase()}
-                        </span>
-                        {selectedCountry.regions.length > 1 && (
-                          <span className="ml-2">({selectedRegion})</span>
-                        )}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="ml-8 flex items-center">
-                    <button
-                      type="button"
-                      className="rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                    >
-                      <MagnifyingGlassIcon className="h-6 w-6" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </nav>
-
+    <div className="flex w-full flex-col">
+      <Header />
+      <div className="z-10 m-auto w-full">
+        <div className="min-h-full w-full">
           <SearchArea open={isSearchingLocation} />
 
-          <div className="bg-gray-100 py-5 pb-0">
-            <main className="mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex items-center justify-center pb-5">
+          <div className="w-full bg-white py-5">
+            {/*<main className="mx-auto min-w-0 max-w-2xl px-4 sm:px-6 md:min-w-[768px] lg:px-8">*/}
+            <main className="mx-auto min-w-0 max-w-4xl px-4 pb-28">
+              <div className="mb-6 mt-11 flex w-full flex-col justify-between sm:flex-row sm:items-center">
+                <h2 className="mr-10 mb-6 text-3xl font-semibold sm:mb-0" id="forecasts">
+                  Forecasts
+                </h2>
+                <div className="w-full sm:w-[300px]">{searchBox}</div>
+              </div>
+              <div className="mt-8 flex items-center justify-center pb-5">
                 <span className="isolate flex rounded-md shadow-sm">
                   <button
                     type="button"
@@ -127,16 +122,19 @@ const Layout: FC<PropsWithChildren> = (props) => {
               {forecastViewingMode === "graph" && <ForecastGraph />}
             </main>
 
-            <section className="mt-20 border-t border-b border-gray-200 bg-gray-50 py-20">
-              <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <div className="mx-auto max-w-2xl lg:mx-0">
-                  <h2 className="text-3xl font-medium tracking-tight text-gray-900">
-                    Questions and answers
-                  </h2>
-                </div>
+            <section
+              className="h-[400px] bg-cover bg-fixed bg-[center_right_-300px] bg-no-repeat md:bg-center"
+              style={{ backgroundImage: "url(/assets/sticky-bg.jpg)" }}
+            ></section>
+
+            <section className="bg-gray-50 py-20">
+              <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+                <h2 className="mr-10 mb-6 text-3xl font-semibold sm:mb-0" id="faqs">
+                  Questions and answers
+                </h2>
                 <ul
                   role="list"
-                  className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-8 space-y-6 sm:mt-20 lg:max-w-none"
+                  className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-8 space-y-6 lg:max-w-none"
                 >
                   <li>
                     <h3 className="text-lg font-semibold leading-6 text-gray-900">
@@ -192,27 +190,8 @@ const Layout: FC<PropsWithChildren> = (props) => {
           </div>
         </div>
       </div>
-      {/*<VerticalBanner />*/}
     </div>
   );
 };
 
 export default Layout;
-
-const VerticalBanner = () => {
-  return (
-    <div className="relative flex hidden min-h-fit w-full items-center justify-center overflow-hidden bg-red-400 md:flex">
-      <p className="fixed top-1/2 -rotate-90 whitespace-nowrap text-8xl font-black text-white">
-        REKLAM
-      </p>
-    </div>
-  );
-};
-
-export const HorizontalBanner = () => {
-  return (
-    <div className="relative flex h-full w-full items-center justify-center overflow-hidden bg-red-400">
-      <p className="text-4xl font-black text-white">REKLAM</p>
-    </div>
-  );
-};
