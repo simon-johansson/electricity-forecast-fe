@@ -123,9 +123,9 @@ const Layout: FC<PropsWithChildren> = (props) => {
             </main>
 
             <section
-              className="h-[400px] bg-cover bg-fixed bg-[center_right_-300px] bg-no-repeat md:bg-center"
+              className="h-[400px] w-full  bg-cover bg-scroll bg-right-top bg-no-repeat md:bg-fixed md:bg-center"
               style={{ backgroundImage: "url(/assets/sticky-bg.jpg)" }}
-            ></section>
+            />
 
             <section className="bg-gray-50 py-20">
               <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
