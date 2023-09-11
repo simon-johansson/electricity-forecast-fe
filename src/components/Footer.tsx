@@ -20,6 +20,14 @@ export default function Footer() {
                 <p className="text-xl font-semibold tracking-tighter">MyEnergyPrice</p>
               </a>
             </div>
+            <div className="mt-2">
+              <p className="hover:delay-0 relative text-sm text-gray-700 transition-colors delay-150 hover:text-gray-900">
+                Contact us:{" "}
+                <a className="underline" href="mailto:info@eterniaenergy.se">
+                  info@eterniaenergy.se
+                </a>
+              </p>
+            </div>
             <nav className="mt-8 flex gap-8">
               <a
                 className="hover:delay-0 relative -mx-3 -my-2 rounded-lg px-3 py-2 text-sm text-gray-700 transition-colors delay-150 hover:text-gray-900"
