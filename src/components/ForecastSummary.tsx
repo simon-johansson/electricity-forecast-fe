@@ -164,5 +164,3 @@ const SummaryStat: FC<{ description: string; icon: Icon; value: JSX.Element; det
     </div>
   );
 };
-
-// <iframe style="width:100%; border: none; height: 1000px;" src="http://localhost:5173/"></iframe>
