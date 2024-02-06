@@ -26,7 +26,7 @@ const ForecastSummary: FC<{}> = () => {
     details?: string;
   }[] = [
     {
-      description: "Average price",
+      description: "Genomsnittligt pris",
       icon: ArrowsInLineVertical,
       value: (
         <p className="text-xl font-semibold text-gray-900">
@@ -37,7 +37,7 @@ const ForecastSummary: FC<{}> = () => {
       details: `${forecastManager.firstDay.formattedDateShort} - ${forecastManager.lastDay.formattedDateShort}`,
     },
     {
-      description: "Highest price",
+      description: "Höstra priset",
       icon: Mountains,
       value: (
         <p className="text-xl font-semibold text-gray-900">
@@ -48,7 +48,7 @@ const ForecastSummary: FC<{}> = () => {
       details: format(Date.parse(forecastManager.hoursPriceHigh.time), "cccc 'at' HH:mm"),
     },
     {
-      description: "Lowest price",
+      description: "Lägsta priset",
       icon: ChartLineDown,
       value: (
         <p className="text-xl font-semibold text-gray-900">
@@ -66,7 +66,7 @@ const ForecastSummary: FC<{}> = () => {
     details?: string;
   }[] = [
     {
-      description: "Cheapest time on average",
+      description: "Billigaste tiden i genomsnitt",
       icon: PiggyBank,
       value: (
         <p className="text-gray-900">
@@ -81,7 +81,7 @@ const ForecastSummary: FC<{}> = () => {
       }`,
     },
     {
-      description: "Most expensive time on average",
+      description: "Dyraste tiden i genomsnitt",
       icon: SealWarning,
       value: (
         <p className="text-gray-900">
@@ -98,7 +98,7 @@ const ForecastSummary: FC<{}> = () => {
 
   return (
     <div>
-      <h3 className="text-base font-semibold leading-6 text-gray-900">For the next 5 days</h3>
+      <h3 className="text-base font-semibold leading-6 text-gray-900">För nästa 5 dagar</h3>
 
       <dl className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
         {summaryPriceItems.map((item, index) => (
@@ -146,7 +146,7 @@ const SummaryStat: FC<{ description: string; icon: Icon; value: JSX.Element; det
   return (
     <div className="relative flex items-center rounded-lg border border-black border-opacity-10 bg-white px-2 py-5 shadow-md">
       <div className="flex w-20 justify-center">
-        <props.icon size={40} color="#6366f1" weight="duotone" />
+        <props.icon size={40} color="#4a7077" weight="duotone" />
       </div>
       <div className="flex flex-col space-y-1">
         <dt>
@@ -164,3 +164,5 @@ const SummaryStat: FC<{ description: string; icon: Icon; value: JSX.Element; det
     </div>
   );
 };
+
+// <iframe style="width:100%; border: none; height: 1000px;" src="http://localhost:5173/"></iframe>

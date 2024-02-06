@@ -236,7 +236,7 @@ const ShowHourForHourRow: FC<{ expanded: boolean; onClick: () => void }> = (prop
           </>
         ) : (
           <>
-            <span className="text-xs">Hourly</span>
+            <span className="text-xs">Timme för timme</span>
             <ChevronDownIcon className="ml-2 h-3 w-3" />
           </>
         )}

@@ -30,15 +30,15 @@ const ForecastGraph: FC<{}> = () => {
       <svg style={{ height: 0 }}>
         <defs>
           <linearGradient id="areaGradient" x2="0%" y2="100%">
-            <stop offset="30%" stopColor="#4f46e5" stopOpacity={0.1} />
+            <stop offset="30%" stopColor="#78a5a6" stopOpacity={0.1} />
             <stop offset="100%" stopColor="white" stopOpacity={0} />
           </linearGradient>
 
           <linearGradient id="lineGradient" x2="100%" y2="0%">
             <stop offset="0%" stopColor="transparent" stopOpacity={0} />
             <stop offset="40%" stopColor="transparent" stopOpacity={0} />
-            <stop offset="40%" stopColor="#4f46e5" stopOpacity={0.2} />
-            <stop offset="60%" stopColor="#4f46e5" stopOpacity={0.2} />
+            <stop offset="40%" stopColor="#78a5a6" stopOpacity={0.2} />
+            <stop offset="60%" stopColor="#78a5a6" stopOpacity={0.2} />
             <stop offset="60%" stopColor="transparent" stopOpacity={0} />
             <stop offset="100%" stopColor="transparent" stopOpacity={0} />
           </linearGradient>
@@ -194,7 +194,7 @@ const DayChart: FC<{
             interpolation="catmullRom"
             animate={{ duration: 500, onLoad: { duration: 0 } }}
             style={{
-              data: { stroke: "#4f46e5", opacity: 0.6, strokeWidth: 4 },
+              data: { stroke: "#78a5a6", opacity: 0.6, strokeWidth: 4 },
             }}
             data={timeSeries}
           />
@@ -254,7 +254,7 @@ const DayButton: FC<{ day: DayData; isSelected: boolean; onClick: (day: DayData)
       <span
         className={`
           flex h-8 w-8 items-center justify-center rounded-full p-2 text-sm
-          ${isSelected ? "bg-indigo-700 text-white" : "bg-white text-black"}
+          ${isSelected ? "bg-primary text-white" : "bg-white text-black"}
           `}
       >
         {format(date, "d")}
@@ -311,7 +311,7 @@ const CustomLine: FC = (props: any) => {
   const stroke = (() => {
     if (isMax) return "#ef4444";
     if (isMin) return "#22c55e";
-    return "#4f46e5";
+    return "#78a5a6";
   })();
   return (
     <>

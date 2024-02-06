@@ -23,8 +23,16 @@ module.exports = {
         tiny: ['0.70rem', {lineHeight: '1rem'}],
       },
       fontFamily: {
-        sans: ['Inter', ...defaultTheme.fontFamily.sans],
+        // sans: ['Inter', ...defaultTheme.fontFamily.sans],
+        sans: ['Raleway', ...defaultTheme.fontFamily.sans],
       },
+      colors: {
+        primary: "#cb2229",
+        secondary1: "#78a5a6",
+        secondary2: "#4a7077",
+        secondary3: "#0f686a",
+        secondary4: "#666",
+      }
     },
   },
   plugins: [

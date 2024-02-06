@@ -51,13 +51,14 @@ function App() {
       }
     };
     if (countryList.length) {
-      if (!selectedCountry) getUserLocation();
-      else {
-        const country = countryList.find(({ isoCode }) => isoCode === selectedCountry.isoCode);
-        const countryIsAvailable =
-          country && country.regions.find((region) => region === selectedRegion);
-        if (!countryIsAvailable) setFallbackCountry();
-      }
+      setFallbackCountry();
+      // if (!selectedCountry) getUserLocation();
+      // else {
+      //   const country = countryList.find(({ isoCode }) => isoCode === selectedCountry.isoCode);
+      //   const countryIsAvailable =
+      //     country && country.regions.find((region) => region === selectedRegion);
+      //   if (!countryIsAvailable) setFallbackCountry();
+      // }
     }
   }, [countryList]);
 
