@@ -14,6 +14,7 @@ import { useAppSelector } from "../lib/store";
 import { DayData } from "../lib/slice";
 import { BadgeCheap, BadgeExpensive } from "./ForecastTable";
 import { useWindowSize } from "react-use";
+import dateFormatOptions from "../lib/dateFormatOptions";
 
 const ForecastGraph: FC<{}> = () => {
   const { regionData } = useAppSelector((state) => state.forecastSlice);
@@ -30,15 +31,15 @@ const ForecastGraph: FC<{}> = () => {
       <svg style={{ height: 0 }}>
         <defs>
           <linearGradient id="areaGradient" x2="0%" y2="100%">
-            <stop offset="30%" stopColor="#78a5a6" stopOpacity={0.1} />
+            <stop offset="30%" stopColor="#0070bb" stopOpacity={0.1} />
             <stop offset="100%" stopColor="white" stopOpacity={0} />
           </linearGradient>
 
           <linearGradient id="lineGradient" x2="100%" y2="0%">
             <stop offset="0%" stopColor="transparent" stopOpacity={0} />
             <stop offset="40%" stopColor="transparent" stopOpacity={0} />
-            <stop offset="40%" stopColor="#78a5a6" stopOpacity={0.2} />
-            <stop offset="60%" stopColor="#78a5a6" stopOpacity={0.2} />
+            <stop offset="40%" stopColor="#0070bb" stopOpacity={0.2} />
+            <stop offset="60%" stopColor="#0070bb" stopOpacity={0.2} />
             <stop offset="60%" stopColor="transparent" stopOpacity={0} />
             <stop offset="100%" stopColor="transparent" stopOpacity={0} />
           </linearGradient>
@@ -194,7 +195,7 @@ const DayChart: FC<{
             interpolation="catmullRom"
             animate={{ duration: 500, onLoad: { duration: 0 } }}
             style={{
-              data: { stroke: "#78a5a6", opacity: 0.6, strokeWidth: 4 },
+              data: { stroke: "#0070bb", opacity: 0.6, strokeWidth: 4 },
             }}
             data={timeSeries}
           />
@@ -233,7 +234,7 @@ const DaySelector: FC<{
         })}
       </div>
       <p className="text-center text-sm">
-        {format(Date.parse(selectedDay.date), "EEEE, d LLLL yyyy")}
+        {format(Date.parse(selectedDay.date), "EEEE, d LLLL yyyy", dateFormatOptions)}
       </p>
     </div>
   );
@@ -250,7 +251,7 @@ const DayButton: FC<{ day: DayData; isSelected: boolean; onClick: (day: DayData)
       className="flex cursor-pointer select-none flex-col items-center justify-center space-y-1"
       onClick={() => onClick(day)}
     >
-      <span className="text-xs">{format(date, "EEEEE")}</span>
+      <span className="text-xs">{format(date, "EEEEE", dateFormatOptions)}</span>
       <span
         className={`
           flex h-8 w-8 items-center justify-center rounded-full p-2 text-sm
@@ -311,7 +312,7 @@ const CustomLine: FC = (props: any) => {
   const stroke = (() => {
     if (isMax) return "#ef4444";
     if (isMin) return "#22c55e";
-    return "#78a5a6";
+    return "#0070bb";
   })();
   return (
     <>

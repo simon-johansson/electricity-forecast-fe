@@ -10,6 +10,7 @@ import {
 } from "@phosphor-icons/react";
 import ForecastManager from "../lib/ForecastManager";
 import { format } from "date-fns";
+import dateFormatOptions from "../lib/dateFormatOptions";
 
 const ForecastSummary: FC<{}> = () => {
   const { regionData } = useAppSelector((state) => state.forecastSlice);
@@ -45,7 +46,11 @@ const ForecastSummary: FC<{}> = () => {
           <span className="text-sm font-normal">{regionData!.currency}</span>
         </p>
       ),
-      details: format(Date.parse(forecastManager.hoursPriceHigh.time), "cccc 'at' HH:mm"),
+      details: format(
+        Date.parse(forecastManager.hoursPriceHigh.time),
+        "cccc 'kl' HH:mm",
+        dateFormatOptions
+      ),
     },
     {
       description: "Lägsta priset",
@@ -56,7 +61,11 @@ const ForecastSummary: FC<{}> = () => {
           <span className="text-sm font-normal">{regionData!.currency}</span>
         </p>
       ),
-      details: format(Date.parse(forecastManager.hoursPriceLow.time), "cccc 'at' HH:mm"),
+      details: format(
+        Date.parse(forecastManager.hoursPriceLow.time),
+        "cccc 'kl' HH:mm",
+        dateFormatOptions
+      ),
     },
   ];
   const summaryTimeItems: {
@@ -146,7 +155,7 @@ const SummaryStat: FC<{ description: string; icon: Icon; value: JSX.Element; det
   return (
     <div className="relative flex items-center rounded-lg border border-black border-opacity-10 bg-white px-2 py-5 shadow-md">
       <div className="flex w-20 justify-center">
-        <props.icon size={40} color="#4a7077" weight="duotone" />
+        <props.icon size={40} color="#0070bb" weight="duotone" />
       </div>
       <div className="flex flex-col space-y-1">
         <dt>

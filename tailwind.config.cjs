@@ -24,14 +24,17 @@ module.exports = {
       },
       fontFamily: {
         // sans: ['Inter', ...defaultTheme.fontFamily.sans],
-        sans: ['Raleway', ...defaultTheme.fontFamily.sans],
+        // sans: ['Raleway', ...defaultTheme.fontFamily.sans],
+        sans: ['Open Sans', ...defaultTheme.fontFamily.sans],
       },
       colors: {
-        primary: "#cb2229",
-        secondary1: "#78a5a6",
-        secondary2: "#4a7077",
-        secondary3: "#0f686a",
-        secondary4: "#666",
+        primary: "#55b649",
+        secondary1: "#0070bb",
+        secondary2: "#efece7",
+        secondary3: "#ffc03d",
+        secondary4: "#aaa49c",
+        secondary5: "#4a4a4a",
+        secondary6: "#d5c9bc",
       }
     },
   },

@@ -81,7 +81,7 @@ const Layout: FC<PropsWithChildren> = (props) => {
                       px-4 py-2 text-sm font-semibold text-gray-700 
                       ${
                         forecastViewingMode === "summary"
-                          ? "bg-[#cb2229] text-white"
+                          ? "bg-primary text-white"
                           : "bg-white text-gray-700 hover:bg-gray-50"
                       }
                   `}
@@ -96,7 +96,7 @@ const Layout: FC<PropsWithChildren> = (props) => {
                       px-4 py-2 text-sm font-semibold text-gray-700 
                       ${
                         forecastViewingMode === "table"
-                          ? "bg-[#cb2229] text-white"
+                          ? "bg-primary text-white"
                           : "bg-white text-gray-700 hover:bg-gray-50"
                       }
                   `}
@@ -111,7 +111,7 @@ const Layout: FC<PropsWithChildren> = (props) => {
                     px-4 py-2 text-sm font-semibold
                     ${
                       forecastViewingMode === "graph"
-                        ? "bg-[#cb2229] text-white"
+                        ? "bg-primary text-white"
                         : "bg-white text-gray-700 hover:bg-gray-50"
                     }
                   `}

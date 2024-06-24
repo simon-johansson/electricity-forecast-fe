@@ -1,5 +1,7 @@
 import { format, isToday, isTomorrow } from "date-fns";
+import { sv } from "date-fns/locale";
 import { DayData, HourValue, RegionData } from "./slice";
+import dateFormatOptions from "./dateFormatOptions";
 
 export default class ForecastManager {
   private readonly regionData: RegionData;
@@ -113,14 +115,14 @@ export class DayForecast {
   }
 
   get formattedDate() {
-    if (isToday(this.date)) return "Today" + format(this.date, ", d LLL");
-    if (isTomorrow(this.date)) return "Tomorrow" + format(this.date, ", d LLL");
-    return format(this.date, "cccc, d LLL");
+    if (isToday(this.date)) return "Idag" + format(this.date, ", d LLL");
+    if (isTomorrow(this.date)) return "Imorgon" + format(this.date, ", d LLL");
+    return format(this.date, "cccc, d LLL", dateFormatOptions);
   }
 
   get formattedDateShort() {
-    if (isToday(this.date)) return "Today";
-    if (isTomorrow(this.date)) return "Tomorrow";
+    if (isToday(this.date)) return "Idag";
+    if (isTomorrow(this.date)) return "Imorgon";
     return format(this.date, "d LLL");
   }
 
