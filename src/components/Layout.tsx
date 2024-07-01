@@ -9,6 +9,7 @@ import { CircleFlag } from "react-circle-flags";
 import Footer from "./Footer";
 import ForecastSummary from "./ForecastSummary";
 import Header from "./Header";
+import OutOfDateBanner from "./OutOfDateBanner";
 
 // mx-auto min-w-0 max-w-4xl
 
@@ -114,6 +115,8 @@ const Layout: FC<PropsWithChildren> = (props) => {
                   </button>
                 </span>
               </div>
+
+              <OutOfDateBanner />
 
               {forecastViewingMode === "summary" && <ForecastSummary />}
 
