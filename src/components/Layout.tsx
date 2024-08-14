@@ -116,7 +116,7 @@ const Layout: FC<PropsWithChildren> = (props) => {
                 </span>
               </div>
 
-              <OutOfDateBanner />
+              {/*<OutOfDateBanner />*/}
 
               {forecastViewingMode === "summary" && <ForecastSummary />}
 
