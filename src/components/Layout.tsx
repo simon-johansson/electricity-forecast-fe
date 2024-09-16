@@ -8,14 +8,14 @@ import ForecastGraph from "./ForecastGraph";
 import { CircleFlag } from "react-circle-flags";
 import Footer from "./Footer";
 import ForecastSummary from "./ForecastSummary";
-import Header from "./Header";
+import { Spinner } from "@phosphor-icons/react";
 
 const translateSwedishRegion = (region: string) => {
   return "Elområde " + region.slice(-1);
 };
 
 const Layout: FC<PropsWithChildren> = (props) => {
-  const { selectedRegion, selectedCountry, isSearchingLocation, forecastViewingMode } =
+  const { selectedRegion, selectedCountry, isSearchingLocation, forecastViewingMode, isLoading } =
     useAppSelector((state) => state.forecastSlice);
   const dispatch = useAppDispatch();
 
@@ -121,11 +121,31 @@ const Layout: FC<PropsWithChildren> = (props) => {
                 </span>
               </div>
 
+              {isLoading && (
+                <div className="mt-6 flex w-full items-center justify-center">
+                  <Spinner className="h-12 w-12 animate-spin" />
+                </div>
+              )}
+
               {forecastViewingMode === "summary" && <ForecastSummary />}
 
               {forecastViewingMode === "table" && <ForecastTable />}
 
               {forecastViewingMode === "graph" && <ForecastGraph />}
+
+              <div className="mt-10 flex space-x-2">
+                <span className="font-bold">Feedback och frågor:</span>
+                <a href="mailto:info@eterniaenergy.se" className="underline">
+                  info@eterniaenergy.se
+                </a>
+              </div>
+
+              {!isLoading && (
+                <p className="mt-6 text-sm opacity-50">
+                  Priserna kan skilja från andra källor beroende på om exempelvis moms, nätkostnader
+                  och andra avgifter inkluderas eller ej.
+                </p>
+              )}
             </main>
 
             {/*<section*/}

@@ -86,6 +86,8 @@ const DayTable: FC<{ dayForecast: DayForecast; currency: string }> = ({
                   </div>
                 );
 
+                if (hourValue.price === null) return null;
+
                 return (
                   <TimeRow
                     key={hourValue.time}
@@ -135,6 +137,10 @@ const DayTable: FC<{ dayForecast: DayForecast; currency: string }> = ({
                     </div>
                   </div>
                 );
+
+                if (timeSpan.priceHigh.price === 0 && timeSpan.priceLow.price === 0) {
+                  return null;
+                }
 
                 return (
                   <TimeRow
