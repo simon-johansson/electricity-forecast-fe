@@ -38,34 +38,32 @@ const ForecastSummary: FC<{}> = () => {
       details: `${forecastManager.firstDay.formattedDateShort} - ${forecastManager.lastDay.formattedDateShort}`,
     },
     {
-      description: "Höstra priset",
+      description: "Högstra priset",
       icon: Mountains,
       value: (
         <p className="text-xl font-semibold text-gray-900">
-          {forecastManager.hoursPriceHigh.price}{" "}
-          <span className="text-sm font-normal">{regionData!.currency}</span>
+          {format(
+            Date.parse(forecastManager.hoursPriceHigh.time),
+            "ccc 'kl' HH:mm",
+            dateFormatOptions
+          )}
         </p>
       ),
-      details: format(
-        Date.parse(forecastManager.hoursPriceHigh.time),
-        "cccc 'kl' HH:mm",
-        dateFormatOptions
-      ),
+      details: `${forecastManager.hoursPriceHigh.price} ${regionData!.currency}`,
     },
     {
       description: "Lägsta priset",
       icon: ChartLineDown,
       value: (
         <p className="text-xl font-semibold text-gray-900">
-          {forecastManager.hoursPriceLow.price}{" "}
-          <span className="text-sm font-normal">{regionData!.currency}</span>
+          {format(
+            Date.parse(forecastManager.hoursPriceLow.time),
+            "ccc 'kl' HH:mm",
+            dateFormatOptions
+          )}
         </p>
       ),
-      details: format(
-        Date.parse(forecastManager.hoursPriceLow.time),
-        "cccc 'kl' HH:mm",
-        dateFormatOptions
-      ),
+      details: `${forecastManager.hoursPriceLow.price} ${regionData!.currency}`,
     },
   ];
   const summaryTimeItems: {

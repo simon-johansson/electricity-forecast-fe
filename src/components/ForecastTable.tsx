@@ -192,7 +192,7 @@ const TimeRow: FC<{
       }`}
     >
       <div className="flex w-[20%] max-w-[100px] items-center">
-        <span className="w-12 text-center text-sm">{props.time}</span>
+        <span className="w-12 text-center text-lg font-semibold">{props.time}</span>
       </div>
 
       <div
@@ -200,7 +200,7 @@ const TimeRow: FC<{
           props.textColor ? props.textColor : "text-gray-900"
         }`}
       >
-        <span className="relative inline-block min-w-[90px] text-lg font-semibold">
+        <span className="relative inline-block min-w-[90px]">
           {props.price !== null ? (
             <>
               {props.price.toFixed(2)}

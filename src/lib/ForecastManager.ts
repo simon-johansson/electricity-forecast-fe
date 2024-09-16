@@ -203,7 +203,8 @@ export class TimeSpan {
         hours++;
       }
     });
-    return Number(total / hours);
+    const average = Number(total / hours);
+    return isNaN(average) ? 0 : average;
   }
 
   get priceHigh() {
