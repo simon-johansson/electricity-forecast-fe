@@ -38,7 +38,7 @@ const ForecastSummary: FC<{}> = () => {
       details: `${forecastManager.firstDay.formattedDateShort} - ${forecastManager.lastDay.formattedDateShort}`,
     },
     {
-      description: "Högstra priset",
+      description: "Högsta priset",
       icon: Mountains,
       value: (
         <p className="text-xl font-semibold text-gray-900">

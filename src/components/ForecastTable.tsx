@@ -81,7 +81,7 @@ const DayTable: FC<{ dayForecast: DayForecast; currency: string }> = ({
                   <div className="relative h-1 flex-1 rounded-full bg-black/5">
                     <figure
                       className={`absolute top-0 left-0 h-full rounded-full ${bgColor}`}
-                      style={{ width: priceComparedToMax + "%" }}
+                      style={{ width: Math.max(priceComparedToMax, 2) + "%" }}
                     ></figure>
                   </div>
                 );
@@ -107,12 +107,10 @@ const DayTable: FC<{ dayForecast: DayForecast; currency: string }> = ({
                 );
                 const lowPriceLen = Math.round(timeSpan.priceLow.price ?? 0).toString().length;
 
-                const priceLow = timeSpan.priceLow.price
-                  ? timeSpan.priceLow.price.toFixed(2)
-                  : null;
-                const priceHigh = timeSpan.priceHigh.price
-                  ? timeSpan.priceHigh.price.toFixed(2)
-                  : null;
+                const priceLow =
+                  timeSpan.priceLow.price !== null ? timeSpan.priceLow.price.toFixed(2) : null;
+                const priceHigh =
+                  timeSpan.priceHigh.price !== null ? timeSpan.priceHigh.price.toFixed(2) : null;
 
                 const additionalInfo = (
                   <div className="relative h-1 flex-1 rounded-full bg-black/10">
@@ -120,7 +118,7 @@ const DayTable: FC<{ dayForecast: DayForecast; currency: string }> = ({
                       className={`absolute top-0 h-full rounded-full bg-slate-400`}
                       style={{
                         left: lowPriceComparedToMax + "%",
-                        width: highPriceComparedToMax - lowPriceComparedToMax + "%",
+                        width: Math.max(highPriceComparedToMax - lowPriceComparedToMax, 2) + "%",
                       }}
                     ></figure>
                     <div
@@ -138,7 +136,7 @@ const DayTable: FC<{ dayForecast: DayForecast; currency: string }> = ({
                   </div>
                 );
 
-                if (timeSpan.priceHigh.price === 0 && timeSpan.priceLow.price === 0) {
+                if (timeSpan.priceHigh.price === null || timeSpan.priceLow.price === null) {
                   return null;
                 }
 
@@ -150,11 +148,7 @@ const DayTable: FC<{ dayForecast: DayForecast; currency: string }> = ({
                     currency={currency}
                     priceHigh={timeSpan.priceHigh.price}
                     priceLow={timeSpan.priceLow.price}
-                    additionalInfo={
-                      timeSpan.priceHigh.price && timeSpan.priceLow.price
-                        ? additionalInfo
-                        : undefined
-                    }
+                    additionalInfo={additionalInfo}
                   />
                 );
               })}
