@@ -20,6 +20,16 @@ const ForecastSummary: FC<{}> = () => {
 
   if (!forecastManager) return null;
 
+  const hoursPriceHighDisplay =
+    forecastManager.hoursPriceHigh.price !== null && forecastManager.hoursPriceHigh.price <= 0
+      ? "≤0.0"
+      : forecastManager.hoursPriceHigh.price!.toFixed(2);
+
+  const hoursPriceLowDisplay =
+    forecastManager.hoursPriceLow.price !== null && forecastManager.hoursPriceLow.price <= 0
+      ? "≤0.0"
+      : forecastManager.hoursPriceLow.price!.toFixed(2);
+
   const summaryPriceItems: {
     description: string;
     icon: Icon;
@@ -49,7 +59,7 @@ const ForecastSummary: FC<{}> = () => {
           )}
         </p>
       ),
-      details: `${forecastManager.hoursPriceHigh.price} ${regionData!.currency}`,
+      details: `${hoursPriceHighDisplay} ${regionData!.currency}`,
     },
     {
       description: "Lägsta priset",
@@ -63,7 +73,7 @@ const ForecastSummary: FC<{}> = () => {
           )}
         </p>
       ),
-      details: `${forecastManager.hoursPriceLow.price} ${regionData!.currency}`,
+      details: `${hoursPriceLowDisplay} ${regionData!.currency}`,
     },
   ];
   const summaryTimeItems: {

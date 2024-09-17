@@ -6,14 +6,12 @@ import {
   VictoryLabel,
   VictoryLine,
   VictoryVoronoiContainer,
-  VictoryZoomContainer,
 } from "victory";
 import React, { FC, useCallback, useEffect, useMemo, useState } from "react";
-import { format, getHours } from "date-fns";
+import { format } from "date-fns";
 import { useAppSelector } from "../lib/store";
 import { DayData } from "../lib/slice";
 import { BadgeCheap, BadgeExpensive } from "./ForecastTable";
-import { useWindowSize } from "react-use";
 import dateFormatOptions from "../lib/dateFormatOptions";
 
 const ForecastGraph: FC<{}> = () => {
@@ -85,14 +83,15 @@ const DayChart: FC<{
   }, [days]);
 
   const [dayMin, dayMax, dayAverage] = useMemo(() => {
-    let min = 10000;
-    let max = 0;
+    let min = selectedDay.series[0];
+    let max = selectedDay.series[0];
     let average = 0;
     let len = 0;
-    selectedDay.series.forEach(({ price }) => {
-      if (price && price < min) min = price;
-      if (price && price > max) max = price;
-      if (price) {
+    selectedDay.series.forEach((s) => {
+      const price = s.price;
+      if (min.price === null || (price !== null && price < min.price)) min = s;
+      if (max.price === null || (price !== null && price > max.price)) max = s;
+      if (price !== null) {
         average += price;
         len++;
       }
@@ -206,11 +205,11 @@ const DayChart: FC<{
               data: { stroke: "transparent", opacity: 0, strokeWidth: 4 },
             }}
             labels={({ datum }) => {
-              if (datum.y === dayMax) return "high";
-              if (datum.y === dayMin) return "low";
+              if (datum.x === Date.parse(dayMax.time)) return "high";
+              if (datum.x === Date.parse(dayMin.time)) return "low";
               return "";
             }}
-            labelComponent={<CustomLabel />}
+            labelComponent={<CustomLabel dayMax={dayMax} dayMin={dayMin} />}
             data={timeSeries}
           />
         </VictoryChart>
@@ -264,7 +263,7 @@ const DayButton: FC<{ day: DayData; isSelected: boolean; onClick: (day: DayData)
   );
 };
 
-const CustomLabel: FC = (props: any) => {
+const CustomLabel = (props: any) => {
   const [show, setShow] = useState(false);
   const el = useMemo<JSX.Element | null>(() => {
     if (props.text(props) === "high") return <BadgeExpensive />;
@@ -288,14 +287,16 @@ const CustomLabel: FC = (props: any) => {
 };
 
 const MyCustomLabel = (props: any) => {
+  const low = props.dayMin.price <= 0 ? "≤0.0" : props.dayMin.price.toFixed(2);
+  const high = props.dayMax.price <= 0 ? "≤0.0" : props.dayMax.price.toFixed(2);
   return (
     <foreignObject x={10} y={-7} width="100" height="50">
       <div className={`left w-full ${props.hide ? "hidden" : ""}`}>
         <span className="mr-1 text-lg font-semibold">{props.dayAverage.toFixed(2)}</span>
         <span className="text-xs">{props.currency}</span>
         <span className="block text-xs">
-          <span className="mr-2">H:{props.dayMax.toFixed(2)}</span>
-          <span>L:{props.dayMin.toFixed(2)}</span>
+          <span className="mr-2">H:{high}</span>
+          <span>L:{low}</span>
         </span>
       </div>
     </foreignObject>
@@ -305,21 +306,23 @@ const MyCustomLabel = (props: any) => {
 const CustomLine: FC = (props: any) => {
   if (props.text[0] === null) return null;
 
-  const price = props.text[0];
+  let price = props.text[0];
+  price = parseFloat(price) <= 0 ? "≤0.0" : parseFloat(price).toFixed(2);
   const time = format(props.datum.x, "HH:mm");
-  const isMax = props.datum.y === props.dayMax;
-  const isMin = props.datum.y === props.dayMin;
+  const isMax = props.datum.y === props.dayMax.price;
+  const isMin = props.datum.y === props.dayMin.price;
   const stroke = (() => {
     if (isMax) return "#ef4444";
     if (isMin) return "#22c55e";
     return "#0070bb";
   })();
+
   return (
     <>
       <foreignObject x={props.x - 40} y={10} width="100" height="40">
         <div className="w-full text-center">
           <span className="block text-xs">{time}</span>
-          <span className="mr-1 text-lg font-semibold">{parseFloat(price).toFixed(2)}</span>
+          <span className="mr-1 text-lg font-semibold">{price}</span>
           <span className="text-xs">{props.currency}</span>
         </div>
       </foreignObject>

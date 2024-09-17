@@ -197,7 +197,7 @@ const TimeRow: FC<{
         <span className="relative inline-block min-w-[90px]">
           {props.price !== null ? (
             <>
-              {props.price.toFixed(2)}
+              {props.price <= 0 ? "≤0.0" : props.price.toFixed(2)}
               <span className="col-span-3 ml-1 mr-2 text-tiny font-light">{props.currency}</span>
             </>
           ) : (
