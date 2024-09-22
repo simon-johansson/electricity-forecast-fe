@@ -75,13 +75,15 @@ const DayTable: FC<{ dayForecast: DayForecast; currency: string }> = ({
                   dayForecast.compareHoursPrice(hourValue.price ?? 0) * 100
                 );
                 let bgColor = "bg-green-300";
-                if (priceComparedToMax > 30) bgColor = "bg-slate-300";
+                if (priceComparedToMax > 20) bgColor = "bg-slate-300";
                 if (priceComparedToMax > 80) bgColor = "bg-red-300";
                 const additionalInfo = (
                   <div className="relative h-1 flex-1 rounded-full bg-black/5">
                     <figure
-                      className={`absolute top-0 left-0 h-full rounded-full ${bgColor}`}
-                      style={{ width: Math.max(priceComparedToMax, 2) + "%" }}
+                      className={`absolute -top-[8px] left-0 h-[20px] w-[20px] rounded-full ${bgColor}`}
+                      style={{
+                        left: `max(calc(${priceComparedToMax}% - 20px), 0px)`,
+                      }}
                     ></figure>
                   </div>
                 );
