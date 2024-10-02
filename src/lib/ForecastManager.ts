@@ -115,15 +115,15 @@ export class DayForecast {
   }
 
   get formattedDate() {
-    if (isToday(this.date)) return "Idag" + format(this.date, ", d LLL");
-    if (isTomorrow(this.date)) return "Imorgon" + format(this.date, ", d LLL");
+    if (isToday(this.date)) return "Idag" + format(this.date, ", d LLL", dateFormatOptions);
+    if (isTomorrow(this.date)) return "Imorgon" + format(this.date, ", d LLL", dateFormatOptions);
     return format(this.date, "cccc, d LLL", dateFormatOptions);
   }
 
   get formattedDateShort() {
     if (isToday(this.date)) return "Idag";
     if (isTomorrow(this.date)) return "Imorgon";
-    return format(this.date, "d LLL");
+    return format(this.date, "d LLL", dateFormatOptions);
   }
 
   get hours() {

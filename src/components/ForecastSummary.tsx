@@ -9,8 +9,14 @@ import {
   SealWarning,
 } from "@phosphor-icons/react";
 import ForecastManager from "../lib/ForecastManager";
-import { format } from "date-fns";
+import { format, isToday, isTomorrow } from "date-fns";
 import dateFormatOptions from "../lib/dateFormatOptions";
+
+const formattedDate = (date: Date) => {
+  if (isToday(date)) return "Idag" + format(date, ", 'kl' HH:mm", dateFormatOptions);
+  if (isTomorrow(date)) return "Imorgon" + format(date, ", 'kl' HH:mm", dateFormatOptions);
+  return format(date, "d LLL 'kl' HH:mm", dateFormatOptions);
+};
 
 const ForecastSummary: FC<{}> = () => {
   const { regionData } = useAppSelector((state) => state.forecastSlice);
@@ -48,32 +54,24 @@ const ForecastSummary: FC<{}> = () => {
       details: `${forecastManager.firstDay.formattedDateShort} - ${forecastManager.lastDay.formattedDateShort}`,
     },
     {
-      description: "Högsta priset",
-      icon: Mountains,
-      value: (
-        <p className="text-xl font-semibold text-gray-900">
-          {format(
-            Date.parse(forecastManager.hoursPriceHigh.time),
-            "ccc 'kl' HH:mm",
-            dateFormatOptions
-          )}
-        </p>
-      ),
-      details: `${hoursPriceHighDisplay} ${regionData!.currency}`,
-    },
-    {
       description: "Lägsta priset",
       icon: ChartLineDown,
       value: (
         <p className="text-xl font-semibold text-gray-900">
-          {format(
-            Date.parse(forecastManager.hoursPriceLow.time),
-            "ccc 'kl' HH:mm",
-            dateFormatOptions
-          )}
+          {formattedDate(new Date(forecastManager.hoursPriceLow.time))}
         </p>
       ),
       details: `${hoursPriceLowDisplay} ${regionData!.currency}`,
+    },
+    {
+      description: "Högsta priset",
+      icon: Mountains,
+      value: (
+        <p className="text-xl font-semibold text-gray-900">
+          {formattedDate(new Date(forecastManager.hoursPriceHigh.time))}
+        </p>
+      ),
+      details: `${hoursPriceHighDisplay} ${regionData!.currency}`,
     },
   ];
   const summaryTimeItems: {
@@ -115,7 +113,9 @@ const ForecastSummary: FC<{}> = () => {
 
   return (
     <div>
-      <h3 className="text-base font-semibold leading-6 text-gray-900">För nästa 5 dagar</h3>
+      <h3 className="text-base font-semibold leading-6 text-gray-900">
+        För nästa {forecastManager.days.length} dagar
+      </h3>
 
       <dl className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
         {summaryPriceItems.map((item, index) => (
