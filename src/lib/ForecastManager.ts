@@ -96,8 +96,8 @@ export default class ForecastManager {
 
 export class DayForecast {
   private readonly dayData: DayData;
-  private readonly date: number;
   private readonly forecastManager: ForecastManager;
+  public readonly date: number;
   public readonly timeSpans: TimeSpan[];
 
   constructor(dayData: DayData, forecastManager: ForecastManager) {

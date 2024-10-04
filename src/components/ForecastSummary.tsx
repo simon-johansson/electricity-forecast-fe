@@ -51,7 +51,11 @@ const ForecastSummary: FC<{}> = () => {
           <span className="text-sm font-normal">{regionData!.currency}</span>
         </p>
       ),
-      details: `${forecastManager.firstDay.formattedDateShort} - ${forecastManager.lastDay.formattedDateShort}`,
+      details: `${format(forecastManager.firstDay.date, "d LLL", dateFormatOptions)} - ${format(
+        forecastManager.lastDay.date,
+        "d LLL",
+        dateFormatOptions
+      )}`,
     },
     {
       description: "Lägsta priset",
