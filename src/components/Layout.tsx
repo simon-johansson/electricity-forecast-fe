@@ -50,6 +50,30 @@ const Layout: FC<PropsWithChildren> = (props) => {
     </div>
   );
 
+  const getMainContent = () => {
+    if (selectedCountry.isoCode === "SE") {
+      return (
+        <div className="mt-10 w-full text-center">
+          <p className="text-lg">
+            To view the energy price forecasts for Sweden please go to{" "}
+            <a className="underline" href="https://www.planeraelen.se">
+              www.planeraelen.se
+            </a>
+          </p>
+        </div>
+      );
+    }
+    if (forecastViewingMode === "summary") {
+      return <ForecastSummary />;
+    }
+    if (forecastViewingMode === "table") {
+      return <ForecastTable />;
+    }
+    if (forecastViewingMode === "graph") {
+      return <ForecastGraph />;
+    }
+  };
+
   return (
     <div className="flex w-full flex-col">
       <Header />
@@ -118,11 +142,7 @@ const Layout: FC<PropsWithChildren> = (props) => {
 
               {/*<OutOfDateBanner />*/}
 
-              {forecastViewingMode === "summary" && <ForecastSummary />}
-
-              {forecastViewingMode === "table" && <ForecastTable />}
-
-              {forecastViewingMode === "graph" && <ForecastGraph />}
+              {getMainContent()}
             </main>
 
             <section
