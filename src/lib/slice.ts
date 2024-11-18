@@ -32,7 +32,7 @@ interface State {
 
 const initialState: State = {
   isLoading: true,
-  forecastViewingMode: "table",
+  forecastViewingMode: "summary",
   isSearchingLocation: false,
   countryList: [],
 };
